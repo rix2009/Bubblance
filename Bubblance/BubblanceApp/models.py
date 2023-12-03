@@ -19,4 +19,3 @@ class BUser(User):
     usertype = models.IntegerField(choices=UserType.choices)
     rememberme = models.BooleanField(default=False)
     image = models.ImageField(default=None)
-
