@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from BubblanceApp.models import BUser
+from django.forms import ModelForm
 
 
 # Create your forms here.
@@ -21,3 +22,4 @@ class NewUserForm(UserCreationForm):
 		if commit:
 			user.save()
 		return user
+	

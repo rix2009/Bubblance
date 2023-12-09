@@ -18,4 +18,4 @@ class BUser(User):
     phonenumber = models.CharField(max_length=10)
     usertype = models.IntegerField(choices=UserType.choices)
     rememberme = models.BooleanField(default=False)
-    image = models.ImageField(default=None)
+    # image = models.ImageField(default=None)

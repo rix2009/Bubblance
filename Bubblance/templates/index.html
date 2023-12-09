@@ -10,7 +10,7 @@
       
       <!--Navbar-->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Navbar</a>
+  <a class="navbar-brand" href="#">Bubblance</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="False" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -22,8 +22,9 @@
         <a class="nav-link" href="/logout">Logout</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Welcome, {{user.username}}</a>
+        <a class="nav-link" href="#">Welcome, {{user.buser.firstname}}</a>
       </li>
+
 
       {% else %}
 
@@ -39,12 +40,8 @@
         {% load crispy_forms_tags %}
     <!--Contact form-->
     <div>
-        <h1>Contact</h1>
-        <h4>Contact us directly if you have any questions</h4>
-        <p>
-          Please write your name, email address and a message below if you have any questions.
-          One of our staff members will be happy to contact you directly and answer your questions as soon as possible. 
-        </p>
+        <h1>Bubblance</h1>
+        <h4>The way for you to manage your private ambulance tasks</h4>
 
         </div>
       <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>

@@ -3,24 +3,28 @@ from .forms import NewUserForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from django.urls import reverse
+from .models import BUser
+
 
 
 # Create your views here.
 
-def home(request):
-	return render(request, "home.html", {})
+def index(request):
+	context = {}
+	context["users"] = BUser.objects.all()
+	return render(request, "index.html", context)
 
 
 def register_request(request):
+	form = NewUserForm()
 	if request.method == "POST":
 		form = NewUserForm(request.POST)
 		if form.is_valid():
 			user = form.save()
-			login(request, user)
-			messages.success(request, "Registration successful." )
+			messages.success(request, "user added successfuly." )
 			return redirect("home")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
-	form = NewUserForm()
 	return render (request=request, template_name="register.html", context={"register_form":form})
 
 
@@ -34,7 +38,7 @@ def login_request(request):
 			if user is not None:
 				login(request, user)
 				messages.info(request, f"You are now logged in as {username}.")
-				return redirect("home")
+				return redirect(reverse("home"), kwargs={"user": user})
 			else:
 				messages.error(request,"Invalid username or password.")
 		else:
