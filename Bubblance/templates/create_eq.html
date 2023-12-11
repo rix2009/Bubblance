@@ -1,0 +1,18 @@
+{% extends "header.html" %}
+
+{% block content %}      
+
+{% load crispy_forms_tags %}
+
+<!--Login--> 
+<div class="container py-5">
+  <h1>Add a new Equipment to the Ambulance</h1>
+  <form method="POST">
+    {% csrf_token %}
+    {{create_equipment_form|crispy}}
+    {{equipment_in_ambulance_form|crispy}}
+    <button class="btn btn-primary" type="submit">Add</button>
+  </form>
+</div>
+
+{% endblock %}

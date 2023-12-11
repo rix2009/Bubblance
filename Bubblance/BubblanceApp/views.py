@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import NewUserForm
+from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
@@ -51,3 +51,32 @@ def logout_request(request):
 	logout(request)
 	messages.info(request, "You have successfully logged out.") 
 	return redirect("home")
+
+
+def create_ambulance(request):
+	form = NewAmbulanceForm()
+	if request.method == "POST":
+		form = NewAmbulanceForm(request.POST)
+		if form.is_valid():
+			ambulance = form.save()
+			messages.success(request, "Ambulance added successfuly." )
+			return redirect("home")
+		messages.error(request, "Unsuccessful registration. Invalid information.")
+	return render (request=request, template_name="create_ambulance.html", context={"create_ambulance_form":form})
+
+
+def create_equipment(request):
+	form1 = NewEquipmentForm()
+	form2 = EqupmentInAmbulanceForm()
+	if request.method == "POST":
+		form1 = NewEquipmentForm(request.POST)
+		form2 = EqupmentInAmbulanceForm(request.POST)
+		if form1.is_valid() and form2.is_valid():
+			eq = form1.save()
+			form2.eq_id = eq
+			eq_in_ambulance = form2.save()
+			messages.success(request, "Equipment added successfuly." )
+			return redirect("home")
+		messages.error(request, "Unsuccessful registration. Invalid information.")
+	return render (request=request, template_name="create_eq.html", 
+				context={"create_equipment_form":form1, "equipment_in_ambulance_form":form2})
