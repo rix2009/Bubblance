@@ -1,0 +1,22 @@
+{% extends "header.html" %}
+
+{% block content %}      
+
+{% load crispy_forms_tags %}
+
+{% for amb in ambulances %}
+<!--ambulance--> 
+<div class="container py-5">
+  <h1>Ambulance number {{amb.ambulance_number}}</h1>
+  <form method="POST" action="{% url 'BubblanceApp.create_ambulance' %}">
+    <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}">Add</button>
+  </form>
+</div>
+{% endfor %}
+
+<div class="container py-5">
+  <h1>Whant to add an Ambulance?</h1>
+  <a class="btn btn-primary" href="{% url 'BubblanceApp.create_ambulance' %}">Click here</a>
+</div>
+
+{% endblock %}

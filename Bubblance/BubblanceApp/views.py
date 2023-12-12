@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse
-from .models import BUser
+from .models import BUser, Ambulance
 
 
 
@@ -65,7 +65,18 @@ def create_ambulance(request):
 	return render (request=request, template_name="create_ambulance.html", context={"create_ambulance_form":form})
 
 
+def ambulance(request):
+	context = {}
+	context["ambulance"] = Ambulance.objects.all()
+	if request.method == "POST":
+		amb = request.POST
+		request.session
+		render(request=request, template_name="create_eq.html", context = {"amb":amb})
+	return render (request=request, template_name="ambulance.html", context = context)
+
+
 def create_equipment(request):
+	amb = request.POST["amb"]
 	form1 = NewEquipmentForm()
 	form2 = EqupmentInAmbulanceForm()
 	if request.method == "POST":
@@ -79,4 +90,4 @@ def create_equipment(request):
 			return redirect("home")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
 	return render (request=request, template_name="create_eq.html", 
-				context={"create_equipment_form":form1, "equipment_in_ambulance_form":form2})
+				context={"create_equipment_form":form1, "equipment_in_ambulance_form":form2, "amb":amb})

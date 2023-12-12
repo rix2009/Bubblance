@@ -6,11 +6,12 @@
 
 <!--Login--> 
 <div class="container py-5">
-  <h1>Add a new Equipment to the Ambulance</h1>
+  <h1>Add a new Equipment to Ambulance number {{amb.ambulance_number}}</h1>
   <form method="POST">
     {% csrf_token %}
     {{create_equipment_form|crispy}}
-    {{equipment_in_ambulance_form|crispy}}
+    {{equipment_in_ambulanc e_form.am_id.as_hidden = amb.ambulance_id}}
+    {{equipment_in_ambulance_form.amount|crispy}}
     <button class="btn btn-primary" type="submit">Add</button>
   </form>
 </div>
