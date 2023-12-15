@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -7,43 +8,100 @@
       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     </head>
     <body>
-      
+{% if user.is_authenticated %}
       <!--Navbar-->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <img class="navbar-logo" src="{% static 'logo.png' %}" width="60px" height="60px"> 
   <a class="navbar-brand" href="#">Bubblance</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="False" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarText">
     <ul class="navbar-nav mr-auto">
-      {% if user.is_authenticated %}
+
       
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Welcome, {{user.buser.firstname}}</a>
-      </li>
-
-
-      {% else %}
-
-      <li class="nav-item">
-        <a class="nav-link" href="/login">Login</a>
-      </li>
-
-      {% endif %}
+      
     </ul>
   </div>
 </nav>
+{% endif %}
+      {% if user.is_authenticated %}
+          <!--main div-->    
+          <!--under navbar-->
+      <div style="margin-left: 10%; margin-top: 3%;">
+        <a style="color: #353459; font-size: x-large;">Welcome, {{user.buser.firstname}}</a>
+        <br><br>
+        <p style="color: #353459; font-size: x-large;"><b>Always ready<br>anytime & anywhere!</b></p>
+      </div>   
+      <div align="center" style="margin-top: 20%"> 
+      <form method="link" action="{% url 'home' %}">
+        <button class="btn btn-lg" type="submit" style="background-color: #fce7e9; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
+        <table>
+          <tr>
+            <td>
+              <img class="navbar-logo" src="{% static 'plan_a_ride.png' %}" width="50px" height="50px">
+            </td>
+            <td style="color: #353459; font-size: large;" >
+              Plan a Ride
+            </td>
+            <td>
 
-        {% load crispy_forms_tags %}
-    <!--Contact form-->
-    <div>
-        <h1>Bubblance</h1>
-        <h4>The way for you to manage your private ambulance tasks</h4>
+            </td>
+          </tr>
+        </table>
+      </button>
+      </form>
+      <br>
+      <br>
+      <form method="link" action="{% url 'ambulance' %}">
+        <button class="btn btn-lg" type="submit" style="background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
+          <table>
+          <tr >
+            <td>
+              <img class="navbar-logo" src="{% static 'ambulances.png' %}" width="50px" height="50px">
+            </td>
+            <td style="color: #353459; font-size: large;">
+              Ambulances
+            </td>
+            <td>
 
-        </div>
+            </td>
+          </tr>
+        </table>
+      </button>
+      </form>
+      <br>
+      <br>
+      <form method="link" action="{% url 'home' %}">
+        <button class="btn btn-lg" type="submit" style="background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px; width: 60%;box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
+          <table>
+          <tr >
+            <td>
+              <img class="navbar-logo" src="{% static 'drivers.png' %}" width="50px" height="50px">
+            </td>
+            <td style="color: #353459; font-size: large;">
+              Drivers
+            </td>
+            <td>
+
+            </td>
+          </tr>
+        </table>
+      </button>
+      </form>
+      {% else %}
+      <div align="center" style="margin-top: 30%"> 
+        <h1 style="color: #353459">Bubblance</h1>
+        <img src="{% static 'logo.png' %}" width="200" height="200" style="margin-top: 20%;"> 
+        <p style="color: #353459; font-size: x-large;"><b>The way for you to manage<br>your private ambulance tasks</b></p>
+        <form method="link" action="{% url 'login' %}">
+        <button class="btn btn-primary btn-lg active" type="submit" style="margin-top: 30%;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;" >Login</button>
+        </form>  
+      {% endif %}
+      </div>
       <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
       <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>

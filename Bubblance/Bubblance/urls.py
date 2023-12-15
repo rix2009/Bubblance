@@ -26,7 +26,9 @@ urlpatterns = [
     path("login/", views.login_request, name="login"),
     path("logout/", views.logout_request, name= "logout"),
     path("create/ambulance", views.create_ambulance, name = "create_ambulance"),
+    path("ambulance", views.ambulance, name = "ambulance"),
     path("create/equipment", views.create_equipment, name = "create_equipment_form"),
-
+    path("ambulance_info", views.ambulance_info, name = "ambulance_info"),
+    path("drivers", views.drivers, name = "drivers"),
 
 ]

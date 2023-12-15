@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
-from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse
-from .models import BUser, Ambulance
+from datetime import datetime
+from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm
+from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew
 
 
 
@@ -60,18 +61,21 @@ def create_ambulance(request):
 		if form.is_valid():
 			ambulance = form.save()
 			messages.success(request, "Ambulance added successfuly." )
-			return redirect("home")
+			return redirect("ambulance")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
 	return render (request=request, template_name="create_ambulance.html", context={"create_ambulance_form":form})
 
 
 def ambulance(request):
 	context = {}
-	context["ambulance"] = Ambulance.objects.all()
+	context["no_amb"] = False
+	context["ambulances"] = Ambulance.objects.all()
+	if context["ambulances"].count() == 0:
+		context["no_amb"] = True
 	if request.method == "POST":
 		amb = request.POST
 		request.session
-		render(request=request, template_name="create_eq.html", context = {"amb":amb})
+		render(request=request, template_name="ambulance_info.html", context = {"amb":amb})
 	return render (request=request, template_name="ambulance.html", context = context)
 
 
@@ -91,3 +95,23 @@ def create_equipment(request):
 		messages.error(request, "Unsuccessful registration. Invalid information.")
 	return render (request=request, template_name="create_eq.html", 
 				context={"create_equipment_form":form1, "equipment_in_ambulance_form":form2, "amb":amb})
+
+
+def drivers(request):
+	context = {}
+	context["users"] = BUser.objects.all()
+	return render (request=request, template_name="drivers.html", context = context)
+
+def ambulance_info(request):
+	context = {}
+	amb = request.POST["amb"]
+	eq_in_amb = []
+	for e in Eq_in_Ambulance.objects.all():
+		if e.am_id == amb.am_id:
+			eq_in_amb.append(e)
+	for d in AmbulanceCrew.objects.filter(datetime.now() in range(start_time, end_time)):
+		if amb.am_id == d.am_id:
+			context["driver"] = BUser.objects.get(id = d.driver_id)
+	context["amb"] = amb
+	context["equipments"] = eq_in_amb 
+	return render (request=request, template_name="ambulance_info.html", context = context)

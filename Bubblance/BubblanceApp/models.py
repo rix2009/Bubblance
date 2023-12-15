@@ -48,7 +48,7 @@ class Equipment(models.Model):
 
 class Eq_in_Ambulance(models.Model):
     eq_id = models.ForeignKey(Equipment, on_delete=models.CASCADE)
-    Am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
+    am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
 
 

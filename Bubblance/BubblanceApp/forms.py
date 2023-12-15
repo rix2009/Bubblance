@@ -52,9 +52,12 @@ class EqupmentInAmbulanceForm(ModelForm):
 	class Meta:
 		model = Eq_in_Ambulance
 		fields = ("am_id", "amount")
-		labels = {"am_id": _("Ambulance"),
-			"amount": _("Amount")}
 
+
+	def __init__(self, *args, **kwargs):
+		super(EqupmentInAmbulanceForm, self).__init__(*args, **kwargs)
+		self.fields['am_id'].label = 'Ambulance'
+		self.fields['amount'].label = 'Amount'
 
 	
 	def save(self, commit=True):

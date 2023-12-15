@@ -3,16 +3,24 @@
 {% block content %}      
 
 {% load crispy_forms_tags %}
+{% for message in messages %}
+    
+    <div class="alert alert-success" style="background-color: #fc9e9e;width: 98%;margin-left: 1%;margin-top: 1%;">
+        <a class="close" href="#" data-dismiss="alert" >X</a>
+           {{ message }}
+    </div>
 
+{% endfor %}
 <!--Login--> 
 <div class="container py-5">
-  <h1>Login</h1>
-  <form method="POST">
+  <h1 style="color: #353459">Login</h1>
+  <form method="POST" style="color: #353459">
     {% csrf_token %}
     {{login_form|crispy}}
-    <button class="btn btn-primary" type="submit">Login</button>
+    <button class="btn btn-primary" type="submit" style="background-color: #353459; color: #fce7e9; border:#353459 1px solid;">Login</button>
   </form>
-  <p class="text-center">Don't have an account? ask your employer for one.</p>
+  <br><br>
+  <p class="text-center" style="font-size: large;">Don't have an account?<br>ask your employer for one.</p>
 </div>
 
 {% endblock %}

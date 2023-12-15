@@ -5,29 +5,29 @@
 
 {% load crispy_forms_tags %}
 
+{% for amb in ambulances %}
 <!--ambulance--> 
 <div class="container py-5">
-  {% for amb in ambulances %}
+  <h1>Ambulance number {{amb.ambulance_number}}</h1>
   <form method="POST" action="{% url 'ambulance_info' %}">
-    <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
-      <table style="color: #353459; font-size: x-large; text-align: center;">
-        <tr>
-          <td style="width: 20%;">
+    <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;">
+      <table>
+        <tr >
+          <td>
             <img class="navbar-logo" src="{% static 'ambulances.png' %}" width="50px" height="50px">
           </td>
-          <td style="width: 70%;">
-            <b>{{amb.ambulance_number}}</b>
+          <td>
+
           </td>
-          <td style="width: 10%;">
-            <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="50px" height="50px" style="margin-left: 10%;">
+          <td style="color: #fce7e9; font-size: medium;">
+            i
           </td>
         </tr>
       </table>
     </button>
   </form>
-  <br>
-  {% endfor %}
 </div>
+{% endfor %}
 
 <div class="container py-5" align="center">
   {% if no_amb %}
