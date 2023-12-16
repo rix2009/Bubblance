@@ -5,6 +5,9 @@ from datetime import datetime
 
 
 # Create your models here.
+class Status(models.IntegerChoices):
+    active = 1
+    deactive = 2
 
 
 class BUser(User):
@@ -18,6 +21,7 @@ class BUser(User):
     phonenumber = models.CharField(max_length=10)
     usertype = models.IntegerField(choices=UserType.choices)
     rememberme = models.BooleanField(default=False)
+    status = models.IntegerField(choices=Status.choices, default=1)
     # image = models.ImageField(default=None)
 
 
@@ -25,6 +29,7 @@ class Ambulance(models.Model):
     ambulance_id = models.AutoField(primary_key=True)
     ambulance_number = models.CharField(max_length=17)
     amb_availablity = models.BooleanField(default=True)
+    status = models.IntegerField(choices=Status.choices, default=1)
 
 
 class AmbulanceCrew(models.Model):
@@ -32,7 +37,8 @@ class AmbulanceCrew(models.Model):
     driver_id = models.ForeignKey(BUser,related_name='related_primary_manual_roats', on_delete=models.CASCADE)
     sec_crew = models.ForeignKey(BUser,related_name='related_secondary_manual_roats', blank=True, null=True ,on_delete=models.CASCADE)
     start_time = models.DateTimeField(default=datetime.now())
-    end_time = models.DateTimeField(blank=True, null=True)
+    end_time = models.DateTimeField(blank=True, null=True ,default=None)
+    status = models.IntegerField(choices=Status.choices, default=1)
 
 
 class EquipmentType(models.Model):
@@ -44,17 +50,20 @@ class Equipment(models.Model):
     eq_id = models.AutoField(primary_key=True)
     eq_type_id = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
     eq_name = models.CharField(max_length=100, unique=True)
+    status = models.IntegerField(choices=Status.choices, default=1)
 
 
 class Eq_in_Ambulance(models.Model):
     eq_id = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
+    status = models.IntegerField(choices=Status.choices, default=1)
 
 
 class Institution(models.Model):
     institution_name = models.CharField(max_length=100, unique=True)
     institution_adress = models.CharField(max_length=255)
+    status = models.IntegerField(choices=Status.choices, default=1)
 
 
 class Customer(models.Model):
@@ -67,6 +76,7 @@ class Customer(models.Model):
     contact_phone = models.CharField(max_length=11)
     customer_type = models.IntegerField(choices=CustomerType.choices)
     institution_id = models.ForeignKey(Institution, blank=True, null=True, on_delete=models.CASCADE)
+    status = models.IntegerField(choices=Status.choices, default=1)
 
 
 class CustomerRequest(models.Model):
@@ -85,6 +95,8 @@ class CustomerRequest(models.Model):
     preferred_driver = models.ForeignKey(BUser, blank=True, null=True, on_delete=models.CASCADE)
     return_trip = models.BooleanField(default=False)
     return_trip_pick_up_time = models.DateTimeField(blank=True, null=True)
+    status = models.IntegerField(choices=Status.choices, default=1)
+
 
 
 class CustomerRide(models.Model):
@@ -95,9 +107,11 @@ class CustomerRide(models.Model):
     drop_of_location = models.CharField(max_length=100)
     pick_up_time = models.DateTimeField(default=datetime.now())
     number_of_stuff_needed = models.PositiveIntegerField()
-    
+    status = models.IntegerField(choices=Status.choices, default=1)
+
 
 class EquipmentInRide(models.Model):
     eq_id = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     ride_id = models.ForeignKey(CustomerRide, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
+    status = models.IntegerField(choices=Status.choices, default=1)

@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse
 from datetime import datetime
-from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm
-from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew
+from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm, NewCrewForm
+from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew, Equipment
 
 
 
@@ -13,7 +13,7 @@ from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew
 
 def index(request):
 	context = {}
-	context["users"] = BUser.objects.all()
+	context["users"] = BUser.objects.filter(status = 1)
 	return render(request, "index.html", context)
 
 
@@ -37,9 +37,12 @@ def login_request(request):
 			password = form.cleaned_data.get('password')
 			user = authenticate(username=username, password=password)
 			if user is not None:
-				login(request, user)
-				messages.info(request, f"You are now logged in as {username}.")
-				return redirect(reverse("home"), kwargs={"user": user})
+				if user == 1:
+					login(request, user)
+					messages.info(request, f"You are now logged in as {username}.")
+					return redirect(reverse("home"), kwargs={"user": user})
+				else:
+					messages.error(request,"The user is not active.")
 			else:
 				messages.error(request,"Invalid username or password.")
 		else:
@@ -69,7 +72,7 @@ def create_ambulance(request):
 def ambulance(request):
 	context = {}
 	context["no_amb"] = False
-	context["ambulances"] = Ambulance.objects.all()
+	context["ambulances"] = Ambulance.objects.filter(status = 1)
 	if context["ambulances"].count() == 0:
 		context["no_amb"] = True
 	if request.method == "POST":
@@ -102,16 +105,53 @@ def drivers(request):
 	context["users"] = BUser.objects.all()
 	return render (request=request, template_name="drivers.html", context = context)
 
+
 def ambulance_info(request):
 	context = {}
-	amb = request.POST["amb"]
-	eq_in_amb = []
-	for e in Eq_in_Ambulance.objects.all():
-		if e.am_id == amb.am_id:
-			eq_in_amb.append(e)
-	for d in AmbulanceCrew.objects.filter(datetime.now() in range(start_time, end_time)):
-		if amb.am_id == d.am_id:
-			context["driver"] = BUser.objects.get(id = d.driver_id)
-	context["amb"] = amb
-	context["equipments"] = eq_in_amb 
-	return render (request=request, template_name="ambulance_info.html", context = context)
+	if request.method == "POST":
+		amb = Ambulance.objects.get(ambulance_id = request.POST.get('amb'))
+		eq_in_amb = []
+		for e in Eq_in_Ambulance.objects.all():
+			if e.am_id == amb.am_id:
+				eq = Equipment.objects.filter(eq_id = e.eq_id)
+				eq_in_amb.append({"eq_in_amb":e,"eq": eq})
+		no_driver = True
+		try:
+			for d in AmbulanceCrew.objects.filter(datetime.now() in date__range[start_date, end_date] ):
+				if amb.am_id == d.am_id:
+					context["driver"] = BUser.objects.get(id = d.driver_id)
+					no_driver = False
+		except:
+			messages.error(request,"The ambulance is not in use")
+		context["amb"] = amb
+		context["equipment"] = eq_in_amb
+		if no_driver:
+			context["busers"] = BUser.objects.all()
+		context["no_driver"] = no_driver
+		context["new_crew_form"] = NewCrewForm
+		return render (request, "ambulance_info.html",context)
+	return redirect (reverse("ambulance"))
+
+
+def disable_ambulance(request):
+	if request.method == "POST":
+		amb = request.POST["amb"]
+		instance = Ambulance.objects.filter(ambulance_id = amb.ambulance_id)
+		for crew in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id):
+			crew.status = 2
+		for eq in Eq_in_Ambulance.objects.filter(am_id = amb.ambulance_id):
+			eq.status = 2
+		instance.status = 2 
+		return redirect (reverse("ambulance"))
+	return redirect (reverse("ambulance"))
+
+
+def driver_to_amb(request):
+	if request.method == "POST":
+		form = NewCrewForm(request.POST)
+		if form.is_valid():
+			crew = form.save()
+			messages.success(request, "Driver added succesfully to the ambulance")
+			return redirect(reverse("ambulance_info"))
+		messages.error(request, "Failed, pls try again with valid info")
+	return redirect(reverse("ambulance"))	

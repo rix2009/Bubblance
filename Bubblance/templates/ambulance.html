@@ -9,7 +9,9 @@
 <div class="container py-5">
   {% for amb in ambulances %}
   <form method="POST" action="{% url 'ambulance_info' %}">
-    <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
+    {% csrf_token %}
+    <input type="hidden" name="amb" value="{{ amb.ambulance_id }}" > 
+    <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
       <table style="color: #353459; font-size: x-large; text-align: center;">
         <tr>
           <td style="width: 20%;">

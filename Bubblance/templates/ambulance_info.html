@@ -5,35 +5,67 @@
 
 {% load crispy_forms_tags %}
 
-{% for amb in ambulances %}
 <!--ambulance--> 
 <div class="container py-5">
-  <h1>Ambulance number {{amb.ambulance_number}}</h1>
-  <form method="POST" action="{% url 'ambulance_info' %}">
-    <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;">
-      <table>
-        <tr >
-          <td>
-            <img class="navbar-logo" src="{% static 'ambulances.png' %}" width="50px" height="50px">
-          </td>
-          <td>
-
-          </td>
-          <td style="color: #fce7e9; font-size: medium;">
-            i
-          </td>
-        </tr>
-      </table>
-    </button>
-  </form>
-</div>
-{% endfor %}
-
-<div class="container py-5" align="center">
-  {% if no_amb %}
-  <h3>Sadly there are no Ambulances to show</h3>
+  <table style="width: 100%; color:#353459;">
+    <tr >
+      <td style="left: 10%;"><h3>{{amb.ambulance_number}}</h3></td>
+      <td style="right: 10%; width: 30%;">
+        <form method="POST" action="{% url 'disable_ambulance' %}">
+        <input type="hidden" name="amb"  value="{{ amb.ambulance_id }}" > 
+        <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
+        Disable</button></form>
+    </td>
+    </tr>
+  </table>
+  <br>
+  {% if no_driver %}
+    <form method="POST" action="{% url 'driver_to_amb' %}">
+    {% csrf_token %}
+    <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
+    <table style="width: 100%;"><tr><td>
+      {{new_crew_form.driver_id|as_crispy_field}}
+    </td><td>
+      <button class="btn btn-primary" type="submit" style="background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;margin-top: 6%;">Add a Driver</button>
+    </td></tr></table>
+    </form>
+  {% else %}
+  <h4>{{driver.firstname}} {{driver.lastname}}</h4>
   {% endif %}
-  <a class="btn btn-primary" href="{% url 'create_ambulance' %}" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add an Ambulance</a>
+  <br>
+  <table style="width: 100%; border:#353459 2px solid">
+    <tr >
+      <td style="border:#353459 2px solid; background-color: #fce7e9;">
+        Equipment
+      </td>
+      <td style="border:#353459 2px solid; background-color: #fce7e9;">
+        Amount
+      </td>
+      <td style="border:#353459 2px solid; background-color: #fce7e9;">
+        Edit
+      </td>
+    </tr>
+    {% for eq in equipment %}
+    <tr>
+      <td style="border:#353459 2px solid">
+        {{eq.eq.eq_name}}
+      </td>
+      <td style="border:#353459 2px solid">
+        {{eq.eq_in_amb.amount}}
+      </td>
+      <form method="POST" action="{% url 'eqipment_edit' %}">
+        <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
+      <td style="border:#353459 2px solid">
+        <img class="navbar-logo" src="{% static 'edit_logo.png' %}" width="50px" height="50px">
+      </td>
+        </button>
+      </form>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="container py-5" align="center">
+  <a class="btn btn-primary" href="{% url 'create_equipment_form' %}" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add an Equipment</a>
 </div>
 
 {% endblock %}

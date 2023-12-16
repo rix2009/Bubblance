@@ -30,5 +30,8 @@ urlpatterns = [
     path("create/equipment", views.create_equipment, name = "create_equipment_form"),
     path("ambulance_info", views.ambulance_info, name = "ambulance_info"),
     path("drivers", views.drivers, name = "drivers"),
+    path("disable_ambulance", views.disable_ambulance, name = "disable_ambulance"),
+    path("driver_to_amb", views.driver_to_amb, name = "driver_to_amb"),
+
 
 ]

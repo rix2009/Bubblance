@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from BubblanceApp.models import BUser, Ambulance, Equipment, Eq_in_Ambulance
+from BubblanceApp.models import BUser, Ambulance, Equipment, Eq_in_Ambulance, AmbulanceCrew
 from django.forms import ModelForm
 
 
@@ -34,7 +34,20 @@ class NewAmbulanceForm(ModelForm):
 		if commit:
 			ambulance.save()
 		return ambulance
-	
+
+
+class NewCrewForm(ModelForm):
+	class Meta:
+		model = AmbulanceCrew
+		fields = ('ambulance_id','driver_id')
+		labels = {'ambulance_id': 'Ambulance', 'driver_id':'Driver'}
+
+	def save(self, commit=True):
+		crew = super(NewCrewForm, self).save(commit=False)
+		if commit:
+			crew.save()
+		return crew
+
 
 class NewEquipmentForm(ModelForm):
 	class Meta:
