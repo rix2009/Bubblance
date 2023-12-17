@@ -9,8 +9,8 @@
   <h1>Add a new Equipment to Ambulance number {{amb.ambulance_number}}</h1>
   <form method="POST">
     {% csrf_token %}
+    <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
     {{create_equipment_form|crispy}}
-    {{equipment_in_ambulanc e_form.am_id.as_hidden = amb.ambulance_id}}
     {{equipment_in_ambulance_form.amount|crispy}}
     <button class="btn btn-primary" type="submit">Add</button>
   </form>

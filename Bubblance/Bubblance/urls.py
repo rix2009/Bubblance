@@ -32,6 +32,6 @@ urlpatterns = [
     path("drivers", views.drivers, name = "drivers"),
     path("disable_ambulance", views.disable_ambulance, name = "disable_ambulance"),
     path("driver_to_amb", views.driver_to_amb, name = "driver_to_amb"),
-
+    path("end_crew_time", views.end_crew_time, name = "end_crew_time"),
 
 ]

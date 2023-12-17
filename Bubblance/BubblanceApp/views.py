@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.urls import reverse
 from datetime import datetime
 from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm, NewCrewForm
@@ -77,7 +78,6 @@ def ambulance(request):
 		context["no_amb"] = True
 	if request.method == "POST":
 		amb = request.POST
-		request.session
 		render(request=request, template_name="ambulance_info.html", context = {"amb":amb})
 	return render (request=request, template_name="ambulance.html", context = context)
 
@@ -112,17 +112,15 @@ def ambulance_info(request):
 		amb = Ambulance.objects.get(ambulance_id = request.POST.get('amb'))
 		eq_in_amb = []
 		for e in Eq_in_Ambulance.objects.all():
-			if e.am_id == amb.am_id:
+			if e.am_id == amb.ambulance_id:
 				eq = Equipment.objects.filter(eq_id = e.eq_id)
 				eq_in_amb.append({"eq_in_amb":e,"eq": eq})
 		no_driver = True
-		try:
-			for d in AmbulanceCrew.objects.filter(datetime.now() in date__range[start_date, end_date] ):
-				if amb.am_id == d.am_id:
-					context["driver"] = BUser.objects.get(id = d.driver_id)
-					no_driver = False
-		except:
-			messages.error(request,"The ambulance is not in use")
+		for d in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id, start_time__lte = datetime.now()):
+			if d.end_time == None :
+				context["driver"] = BUser.objects.get(username = d.driver_id)
+				no_driver = False
+		messages.error(request,"The ambulance is not in use")
 		context["amb"] = amb
 		context["equipment"] = eq_in_amb
 		if no_driver:
@@ -135,13 +133,13 @@ def ambulance_info(request):
 
 def disable_ambulance(request):
 	if request.method == "POST":
-		amb = request.POST["amb"]
+		amb = request.POST.get("amb")
 		instance = Ambulance.objects.filter(ambulance_id = amb.ambulance_id)
 		for crew in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id):
 			crew.status = 2
 		for eq in Eq_in_Ambulance.objects.filter(am_id = amb.ambulance_id):
 			eq.status = 2
-		instance.status = 2 
+		instance.status = 2
 		return redirect (reverse("ambulance"))
 	return redirect (reverse("ambulance"))
 
@@ -152,6 +150,18 @@ def driver_to_amb(request):
 		if form.is_valid():
 			crew = form.save()
 			messages.success(request, "Driver added succesfully to the ambulance")
-			return redirect(reverse("ambulance_info"))
+			return render(request=request, template_name="ambulance_info.html", context =
+				  {"amb":form.cleaned_data.get("ambulance_id"), "driver":form.cleaned_data.get("driver_id")})
 		messages.error(request, "Failed, pls try again with valid info")
+	return redirect(reverse("ambulance"))
+
+
+def end_crew_time(request):
+	if request.method == "POST":
+		amb = Ambulance.objects.get(ambulance_id=request.POST.get("ambulance_id"))
+		user = BUser.objects.get(username=request.POST.get("username"))
+		crew = AmbulanceCrew.objects.get(ambulance_id=amb, driver_id=user, end_time=None)
+		crew.end_time = datetime.now()
+		crew.save()
+		return render(request=request, template_name="ambulance_info.html", context = {"amb":amb, "no_driver":True, "new_crew_form":NewCrewForm})
 	return redirect(reverse("ambulance"))	

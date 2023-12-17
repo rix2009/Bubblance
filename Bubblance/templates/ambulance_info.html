@@ -13,7 +13,7 @@
       <td style="right: 10%; width: 30%;">
         <form method="POST" action="{% url 'disable_ambulance' %}">
         <input type="hidden" name="amb"  value="{{ amb.ambulance_id }}" > 
-        <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
+        <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">
         Disable</button></form>
     </td>
     </tr>
@@ -26,11 +26,27 @@
     <table style="width: 100%;"><tr><td>
       {{new_crew_form.driver_id|as_crispy_field}}
     </td><td>
-      <button class="btn btn-primary" type="submit" style="background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;margin-top: 6%;">Add a Driver</button>
+      <button class="btn btn-primary" type="submit" style="background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-top: 6%; width: 100%;">Add a Driver</button>
     </td></tr></table>
     </form>
   {% else %}
-  <h4>{{driver.firstname}} {{driver.lastname}}</h4>
+  <table style="width: 100%;">
+    <tr>
+      <td style="font-size: x-large;">
+        <b>Driver</b>: {{driver.firstname}} {{driver.lastname}}
+      </td>
+      <td style="right: 10%; width: 30%;">
+        <form method="POST" action="{% url 'end_crew_time' %}">
+          {% csrf_token %}
+          <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
+          <input type="hidden" name="username" id="username" value="{{ driver.username }}" >
+          <button class="btn btn-primary" type="submit" style="background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-top: 6%; width: 100%;">Remove</button>
+        </form>
+      </td>
+    </tr>
+  </table>
+  
+  
   {% endif %}
   <br>
   <table style="width: 100%; border:#353459 2px solid">
@@ -54,6 +70,7 @@
         {{eq.eq_in_amb.amount}}
       </td>
       <form method="POST" action="{% url 'eqipment_edit' %}">
+        {% csrf_token %}
         <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
       <td style="border:#353459 2px solid">
         <img class="navbar-logo" src="{% static 'edit_logo.png' %}" width="50px" height="50px">
@@ -65,7 +82,11 @@
   </table>
 </div>
 <div class="container py-5" align="center">
-  <a class="btn btn-primary" href="{% url 'create_equipment_form' %}" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add an Equipment</a>
+  <form method="POST" action="{% url 'create_equipment_form' %}">
+    {% csrf_token %}
+    <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
+    <button class="btn btn-primary" type="submit" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add an Equipment</button>
+  </form>
 </div>
 
 {% endblock %}
