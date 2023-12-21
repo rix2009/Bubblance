@@ -128,7 +128,7 @@ STATIC_URL = 'static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
 
-GOOGLE_API_KEY = "AIzaSyAAhpswMroeL5u4QnE59wRzKRyZpwk6mHI"
+GOOGLE_API_KEY = "add from notepad"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
