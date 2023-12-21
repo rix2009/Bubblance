@@ -1,12 +1,19 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.generic.edit import FormView
+from django.views.generic.base import TemplateView
+from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse
 from datetime import datetime
 from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm, NewCrewForm
 from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew, Equipment
+from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 
 
 
@@ -38,7 +45,7 @@ def login_request(request):
 			password = form.cleaned_data.get('password')
 			user = authenticate(username=username, password=password)
 			if user is not None:
-				if user == 1:
+				if user.status == 'Active':
 					login(request, user)
 					messages.info(request, f"You are now logged in as {username}.")
 					return redirect(reverse("home"), kwargs={"user": user})
