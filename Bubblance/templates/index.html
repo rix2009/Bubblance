@@ -10,23 +10,20 @@
     <body>
 {% if user.is_authenticated %}
       <!--Navbar-->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <img class="navbar-logo" src="{% static 'logo.png' %}" width="60px" height="60px"> 
-  <a class="navbar-brand" href="#">Bubblance</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="False" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarText">
-    <ul class="navbar-nav mr-auto">
-
-      
-      <li class="nav-item">
-        <a class="nav-link" href="/logout">Logout</a>
-      </li>
-      
-    </ul>
-  </div>
-</nav>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <img class="navbar-logo" src="{% static 'logo.png' %}" width="60px" height="60px" onclick='location.href=`{% url "home" %}`'> 
+        <a class="navbar-brand" href="#">Bubblance</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="False" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarText">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/logout">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
 {% endif %}
       {% if user.is_authenticated %}
           <!--main div-->    
@@ -75,7 +72,7 @@
       </form>
       <br>
       <br>
-      <form method="link" action="{% url 'home' %}">
+      <form method="link" action="{% url 'drivers' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px; width: 60%;box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
           <table>
           <tr >

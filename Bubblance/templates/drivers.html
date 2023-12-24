@@ -1,24 +1,42 @@
 {% extends "header.html" %}
+{% load static %}
 
 {% block content %}      
 
 {% load crispy_forms_tags %}
 
-{% for buser in users %}
 <!--ambulance--> 
 <div class="container py-5">
-  <h1>Ambulance number {{amb.ambulance_number}}</h1>
-  <form method="POST" action="{% url 'create_ambulance' %}">
-    <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}">Add</button>
+  {% for buser in users %}
+  <form method="POST" action="{% url 'driver_info' %}">
+    {% csrf_token %}
+    <input type="hidden" name="buser" value="{{ buser}}" > 
+    <input type="hidden" name="save_form" value="False" >
+    <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
+      <table style="color: #353459; font-size: x-large; text-align: center;">
+        <tr>
+          <td style="width: 20%;">
+            <img class="navbar-logo" src="{% static 'drivers.png' %}" width="50px" height="50px">
+          </td>
+          <td style="width: 70%;">
+            <b>{{buser.firstname}} {{buser.lastname}}</b>
+          </td>
+          <td style="width: 10%;">
+            <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="50px" height="50px" style="margin-left: 10%;">
+          </td>
+        </tr>
+      </table>
+    </button>
   </form>
+  <br>
+  {% endfor %}
 </div>
-{% endfor %}
 
 <div class="container py-5" align="center">
-  {% if no_amb %}
-  <h3>Sadly there are no Ambulances to show</h3>
+  {% if no_user %}
+  <h3>Sadly there are no Drivers to show</h3>
   {% endif %}
-  <a class="btn btn-primary" href="{% url 'create_ambulance' %}">add an Ambulance</a>
+  <a class="btn btn-primary" href="{% url 'register' %}" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add a User</a>
 </div>
 
 {% endblock %}

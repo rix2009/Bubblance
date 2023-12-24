@@ -14,19 +14,20 @@
   {% if user.is_authenticated %}
       <!--Navbar-->
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <img class="navbar-logo" src="{% static 'logo.png' %}" width="60px" height="60px"> 
+  <img class="navbar-logo" src="{% static 'logo.png' %}" width="60px" height="60px" onclick='location.href=`{% url "home" %}`'> 
   <a class="navbar-brand" href="#">Bubblance</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="False" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarText">
     <ul class="navbar-nav mr-auto">
-
-      
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'home' %}">Home</a>
+        <a class="nav-link" href="{% url 'home' %}">Plan a Ride</a>
+        <a class="nav-link" href="{% url 'ambulance' %}">Ambulances</a>
+        <a class="nav-link" href="{% url 'drivers' %}">Drivers</a>
         <a class="nav-link" href="/logout">Logout</a>
       </li>
-      
     </ul>
   </div>
 </nav>

@@ -22,7 +22,22 @@ class NewUserForm(UserCreationForm):
 		if commit:
 			user.save()
 		return user
-	
+
+class UpdateUserForm(ModelForm):
+	class Meta:	
+		model = BUser
+		fields = ("email", "firstname", "lastname",
+				"phonenumber", "usertype")
+		
+
+
+	def save(self, commit=True):
+		user = super(UpdateUserForm, self).save(commit=False)
+		user.email = self.cleaned_data['email']
+		if commit:
+			user.save()
+		return user
+
 
 class NewAmbulanceForm(ModelForm):
 	class Meta:

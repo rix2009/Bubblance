@@ -11,7 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse
 from datetime import datetime
-from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm, NewCrewForm
+from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm, NewCrewForm, UpdateUserForm
 from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew, Equipment
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 
@@ -45,7 +45,7 @@ def login_request(request):
 			password = form.cleaned_data.get('password')
 			user = authenticate(username=username, password=password)
 			if user is not None:
-				if user.status == 'Active':
+				if BUser.objects.get(username=user).status == 1:
 					login(request, user)
 					messages.info(request, f"You are now logged in as {username}.")
 					return redirect(reverse("home"), kwargs={"user": user})
@@ -110,6 +110,9 @@ def create_equipment(request):
 def drivers(request):
 	context = {}
 	context["users"] = BUser.objects.all()
+	context["no_user"] = False		
+	if context["users"].count() == 0:
+		context["no_user"] = True		
 	return render (request=request, template_name="drivers.html", context = context)
 
 
@@ -172,3 +175,33 @@ def end_crew_time(request):
 		crew.save()
 		return render(request=request, template_name="ambulance_info.html", context = {"amb":amb, "no_driver":True, "new_crew_form":NewCrewForm})
 	return redirect(reverse("ambulance"))	
+
+
+def driver_info(request):
+	user = BUser.objects.get(username = request.POST.get("buser"))
+	form = UpdateUserForm(initial={
+		'email': user.email,
+		'firstname': user.firstname,
+		'lastname': user.lastname,
+		'phonenumber': user.phonenumber,
+		'usertype': user.usertype
+	})
+	if request.method == "POST" and request.POST.get("save_form"):
+		form = UpdateUserForm(request.POST)
+		if form.is_valid():
+			form.save()
+			messages.success(request, "user updated successfuly.")
+			return redirect("driver_info")
+		messages.error(request, "Unsuccessful registration. Invalid information.")
+	return render (request=request, template_name="driver_info.html", context={"buser":user, "update_user_form":form, "save_form": True})
+
+
+def disable_driver(request):
+	if request.method == "POST":
+		user = request.POST.get("buser")
+		instance = BUser.objects.filter(username = user.user.username)
+		for crew in AmbulanceCrew.objects.filter(driver_id = user.user.username):
+			crew.status = 2
+		instance.status = 2
+		return redirect (reverse("drivers"))
+	return redirect (reverse("drivers"))
