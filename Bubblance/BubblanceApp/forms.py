@@ -95,8 +95,6 @@ class EqupmentInAmbulanceForm(ModelForm):
 		return eq
 	
 
-class NewCustomerRequest(ModelForm):
-	class Meta:
-		model = CustomerRequest
-		fields = '__all__'
+# class CustomerRequestForm(ModelForm):
+
 

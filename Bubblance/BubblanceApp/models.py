@@ -64,6 +64,7 @@ class Institution(models.Model):
     institution_name = models.CharField(max_length=100, unique=True)
     institution_adress = models.CharField(max_length=255)
     status = models.IntegerField(choices=Status.choices, default=1)
+    in_institution = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
 
 
 class Customer(models.Model):
@@ -108,6 +109,8 @@ class CustomerRide(models.Model):
     pick_up_time = models.DateTimeField(default=datetime.now())
     number_of_stuff_needed = models.PositiveIntegerField()
     status = models.IntegerField(choices=Status.choices, default=1)
+    charge_number = models.CharField(max_length=5, blank=True, null=True)
+
 
 
 class EquipmentInRide(models.Model):
