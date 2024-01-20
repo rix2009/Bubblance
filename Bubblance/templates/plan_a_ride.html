@@ -1,0 +1,30 @@
+{% extends "header.html" %}
+{% load static %}
+
+{% block content %}      
+
+{% load crispy_forms_tags %}
+
+<!--ambulance--> 
+<div class="container py-5">
+  <table style="width: 100%; color:#353459;">
+    <tr >
+      <td style="left: 10%;"><h3>{{buser.firstname}} {{buser.lastname}}</h3></td>
+      <td style="right: 10%; width: 30%;">
+        <form method="POST" action="{% url 'disable_driver' %}">
+        <input type="hidden" name="buser"  value="{{ buser.user.username }}" > 
+        <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">
+        Disable</button></form>
+    </td>
+    </tr>
+  </table>
+  <br>
+  <form method="POST">
+		{% csrf_token %}
+    {{update_user_form|crispy}}
+    {{update_user_form.password.as_hidden}}
+		<button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">Update User</button>
+	</form>
+</div>
+
+{% endblock %}

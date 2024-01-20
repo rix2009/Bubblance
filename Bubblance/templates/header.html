@@ -31,10 +31,18 @@
     </ul>
   </div>
 </nav>
-{% endif %}
-    {% block content %}
+{% block content %}
 
-    {% endblock %} 
+{% endblock %}
+{% else %}
+<div align="center" style="margin-top: 30%"> 
+  <h1 style="color: #353459">Bubblance</h1>
+  <img src="{% static 'logo.png' %}" width="200" height="200" style="margin-top: 20%;"> 
+  <p style="color: #353459; font-size: x-large;"><b>The way for you to manage<br>your private ambulance tasks</b></p>
+  <form method="link" action="{% url 'login' %}">
+  <button class="btn btn-primary btn-lg active" type="submit" style="margin-top: 30%;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;" >Login</button>
+  </form>
+{% endif %}
     <!--jquery-->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <!--popper js-->

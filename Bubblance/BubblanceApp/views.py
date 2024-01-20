@@ -3,19 +3,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.generic.edit import FormView
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.urls import reverse
+from django.urls import reverse, path
 from datetime import datetime
-from .forms import NewUserForm, NewAmbulanceForm, NewEquipmentForm, EqupmentInAmbulanceForm, NewCrewForm, UpdateUserForm
-from .models import BUser, Ambulance, Eq_in_Ambulance, AmbulanceCrew, Equipment
+from .forms import NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm, UpdateUserForm
+from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
-
-
+import requests
 
 # Create your views here.
 
@@ -90,21 +89,18 @@ def ambulance(request):
 
 
 def create_equipment(request):
-	amb = request.POST["amb"]
-	form1 = NewEquipmentForm()
-	form2 = EqupmentInAmbulanceForm()
-	if request.method == "POST":
-		form1 = NewEquipmentForm(request.POST)
-		form2 = EqupmentInAmbulanceForm(request.POST)
-		if form1.is_valid() and form2.is_valid():
-			eq = form1.save()
-			form2.eq_id = eq
-			eq_in_ambulance = form2.save()
+	amb = Ambulance.objects.get(ambulance_id = request.POST.get('amb'))
+	to_submit = request.POST["form_status"]
+	form = EqupmentInAmbulanceForm()
+	if request.method == "POST" and to_submit:
+		form = EqupmentInAmbulanceForm(request.POST)
+		if form.is_valid():
+			eq = form.save()
 			messages.success(request, "Equipment added successfuly." )
-			return redirect("home")
+			return ambulance_info(request)
 		messages.error(request, "Unsuccessful registration. Invalid information.")
 	return render (request=request, template_name="create_eq.html", 
-				context={"create_equipment_form":form1, "equipment_in_ambulance_form":form2, "amb":amb})
+				context={"form":form, "amb":amb,})
 
 
 def drivers(request):
@@ -121,10 +117,8 @@ def ambulance_info(request):
 	if request.method == "POST":
 		amb = Ambulance.objects.get(ambulance_id = request.POST.get('amb'))
 		eq_in_amb = []
-		for e in Eq_in_Ambulance.objects.all():
-			if e.am_id == amb.ambulance_id:
-				eq = Equipment.objects.filter(eq_id = e.eq_id)
-				eq_in_amb.append({"eq_in_amb":e,"eq": eq})
+		for e in EqInAmbulance.objects.filter(am_id = amb):
+			eq_in_amb.append(e)
 		no_driver = True
 		for d in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id, start_time__lte = datetime.now()):
 			if d.end_time == None :
@@ -147,7 +141,7 @@ def disable_ambulance(request):
 		instance = Ambulance.objects.filter(ambulance_id = amb.ambulance_id)
 		for crew in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id):
 			crew.status = 2
-		for eq in Eq_in_Ambulance.objects.filter(am_id = amb.ambulance_id):
+		for eq in EqInAmbulance.objects.filter(am_id = amb.ambulance_id):
 			eq.status = 2
 		instance.status = 2
 		return redirect (reverse("ambulance"))
@@ -193,7 +187,7 @@ def driver_info(request):
 			messages.success(request, "user updated successfuly.")
 			return redirect("driver_info")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
-	return render (request=request, template_name="driver_info.html", context={"buser":user, "update_user_form":form, "save_form": True})
+	return render (request=request, template_name="driver_info", context={"buser":user, "update_user_form":form, "save_form": True})
 
 
 def disable_driver(request):
@@ -205,3 +199,16 @@ def disable_driver(request):
 		instance.status = 2
 		return redirect (reverse("drivers"))
 	return redirect (reverse("drivers"))
+
+
+def edit_equipment(request):
+	if request.method =="POST":
+		amb = Ambulance.objects.get(ambulance_id=request.POST.get("amb"))
+		for e in EqInAmbulance.objects.filter(am_id = amb.ambulance_id):
+			amount = request.POST[str(e.eq_id)]
+			if amount == '0':
+				e.delete()
+			else:
+				e.amount = amount
+				e.save()
+	return ambulance_info(request)

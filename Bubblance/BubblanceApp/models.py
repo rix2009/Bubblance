@@ -41,21 +41,10 @@ class AmbulanceCrew(models.Model):
     status = models.IntegerField(choices=Status.choices, default=1)
 
 
-class EquipmentType(models.Model):
-    eq_type_id = models.AutoField(primary_key=True)
-    eq_type_name = models.CharField(max_length=100, unique=True)
-
-
-class Equipment(models.Model):
+class EqInAmbulance(models.Model):
     eq_id = models.AutoField(primary_key=True)
-    eq_type_id = models.ForeignKey(EquipmentType, on_delete=models.CASCADE)
-    eq_name = models.CharField(max_length=100, unique=True)
-    status = models.IntegerField(choices=Status.choices, default=1)
-
-
-class Eq_in_Ambulance(models.Model):
-    eq_id = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
+    eq_name = models.CharField(max_length=100, unique=True)
     amount = models.PositiveIntegerField()
     status = models.IntegerField(choices=Status.choices, default=1)
 
@@ -82,8 +71,8 @@ class Customer(models.Model):
 
 class CustomerRequest(models.Model):
     customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)    
-    pick_up_location = models.CharField(max_length=100)
-    drop_of_location = models.CharField(max_length=100)
+    pick_up_location = models.CharField(max_length=255)
+    drop_of_location = models.CharField(max_length=255)
     pick_up_time = models.DateTimeField(default=datetime.now())
     num_of_floors = models.PositiveIntegerField()
     devision_name = models.CharField(max_length=100, blank=True, null=True)
@@ -99,7 +88,6 @@ class CustomerRequest(models.Model):
     status = models.IntegerField(choices=Status.choices, default=1)
 
 
-
 class CustomerRide(models.Model):
     customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)    
     Am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
@@ -112,9 +100,8 @@ class CustomerRide(models.Model):
     charge_number = models.CharField(max_length=5, blank=True, null=True)
 
 
-
 class EquipmentInRide(models.Model):
-    eq_id = models.ForeignKey(Equipment, on_delete=models.CASCADE)
+    eq_id = models.ForeignKey(EqInAmbulance, on_delete=models.CASCADE)
     ride_id = models.ForeignKey(CustomerRide, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
     status = models.IntegerField(choices=Status.choices, default=1)

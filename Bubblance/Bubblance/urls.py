@@ -27,16 +27,17 @@ urlpatterns = [
     path("register/", views.register_request, name="register"),
     path("login/", views.login_request, name="login"),
     path("logout/", views.logout_request, name= "logout"),
-    path("create/ambulance", views.create_ambulance, name = "create_ambulance"),
+    path("create_ambulance", views.create_ambulance, name = "create_ambulance"),
     path("ambulance", views.ambulance, name = "ambulance"),
-    path("create/equipment", views.create_equipment, name = "create_equipment_form"),
+    path("create_equipment", views.create_equipment, name = "create_equipment_form"),
     path("ambulance_info", views.ambulance_info, name = "ambulance_info"),
     path("drivers", views.drivers, name = "drivers"),
-    path("driver_info", views.driver_info, name = "driver_info"),
+    path("edit_driver", views.driver_info, name = "driver_info"),
     path("disable_ambulance", views.disable_ambulance, name = "disable_ambulance"),
-    path("driver_to_amb", views.driver_to_amb, name = "driver_to_amb"),
+    path("edit_crew", views.driver_to_amb, name = "driver_to_amb"),
     path("end_crew_time", views.end_crew_time, name = "end_crew_time"),
     path("disable_driver", views.disable_driver, name = "disable_driver"),
+    path("edit_equipment", views.edit_equipment, name = "edit_equipment"),
 
 ]
 

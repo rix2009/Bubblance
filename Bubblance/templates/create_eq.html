@@ -6,13 +6,15 @@
 
 <!--eq--> 
 <div class="container py-5">
-  <h1>Add a new Equipment to Ambulance number {{amb.ambulance_number}}</h1>
+  <h3>Add a new Equipment to Ambulance number {{amb.ambulance_number}}</h3>
   <form method="POST">
     {% csrf_token %}
-    <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
-    {{create_equipment_form|crispy}}
-    {{equipment_in_ambulance_form.amount|crispy}}
-    <button class="btn btn-primary" type="submit">Add</button>
+    <input type="hidden" name="amb" id="amb" value="{{ amb.ambulance_id }}" >
+    <input type="hidden" name="am_id" id="am_id" value="{{ amb.ambulance_id }}" >
+    <input type="hidden" name="form_status" id="form_status" value="True" >
+    {{form.eq_name|as_crispy_field}}
+    {{form.amount|as_crispy_field}}
+    <button class="btn btn-primary" type="submit" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">Add</button>
   </form>
 </div>
 

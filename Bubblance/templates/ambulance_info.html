@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}      
-
 {% load crispy_forms_tags %}
 
 <!--ambulance--> 
@@ -49,44 +48,48 @@
   
   {% endif %}
   <br>
-  <table style="width: 100%; border:#353459 2px solid">
-    <tr >
-      <td style="border:#353459 2px solid; background-color: #fce7e9;">
-        Equipment
-      </td>
-      <td style="border:#353459 2px solid; background-color: #fce7e9;">
-        Amount
-      </td>
-      <td style="border:#353459 2px solid; background-color: #fce7e9;">
-        Edit
-      </td>
-    </tr>
-    {% for eq in equipment %}
-    <tr>
-      <td style="border:#353459 2px solid">
-        {{eq.eq.eq_name}}
-      </td>
-      <td style="border:#353459 2px solid">
-        {{eq.eq_in_amb.amount}}
-      </td>
-      <form method="POST" action="{% url 'eqipment_edit' %}">
-        {% csrf_token %}
-        <button class="btn btn-primary" type="submit" value="{{ amb.ambulance_id }}" style="width: 80%;background-color: #fce7e9; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
-      <td style="border:#353459 2px solid">
-        <img class="navbar-logo" src="{% static 'edit_logo.png' %}" width="50px" height="50px">
-      </td>
-        </button>
-      </form>
-    </tr>
-    {% endfor %}
-  </table>
-</div>
-<div class="container py-5" align="center">
-  <form method="POST" action="{% url 'create_equipment_form' %}">
+  <form method="POST" action="{% url 'edit_equipment' %}">
+    <input type="hidden" name="amb" id="amb" value="{{ amb.ambulance_id }}" >
     {% csrf_token %}
-    <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
-    <button class="btn btn-primary" type="submit" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add an Equipment</button>
+    <table align="center" class="table-bordered" style="width: 90%;">
+      <tr style="background-color: #fce7e9;" >
+        <td>
+          Equipment
+        </td>
+        <td style="width:15%; text-align: center;">
+          Amount
+        </td>
+      </tr>
+      {% for eq in equipment %}
+      <tr>
+        <td>
+          {{eq.eq_name}}
+        </td>
+        <td>
+          <input type="number" min="0" name="{{eq.eq_id}}" id="{{eq.eq_id}}" value="{{eq.amount}}" style="text-align: center; width: 100%;">
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br>
+    <table style="width: 100%;">
+      <tr align="center" style="border: transparent;">
+        <td style="width: 50%;border: transparent;">
+          <button class="btn btn-primary" type="submit" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 80%;">Save changes</button>
+        </td>
+        <td style="width: 50%;border: transparent;">
   </form>
+          <form method="POST" action="{% url 'create_equipment_form' %}">
+            <input type="hidden" name="amb" id="amb" value="{{ amb.ambulance_id }}" >
+            <input type="hidden" name="form_status" id="form_status" value="False" >
+            {% csrf_token %}
+            <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
+            <button class="btn btn-primary" type="submit" style="color: #fce7e9;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 80%;">add an Equipment</button>
+          </form>
+        </td>
+      </tr>
+    </table>
 </div>
+
 
 {% endblock %}
