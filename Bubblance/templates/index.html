@@ -36,16 +36,29 @@
       <div align="center" style="margin-top: 20%"> 
       <form method="link" action="{% url 'home' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
-        <table>
-          <tr>
-            <td style="width: 40%;">
+        <table align="center">
+          <tr style="width: 100%;">
+            <td style="width: 10%;">
               <img class="navbar-logo" src="{% static 'plan_a_ride.png' %}" width="50px" height="50px">
             </td>
-            <td style="color: #353459; font-size: large;" >
+            <td style="color: #353459; font-size: large; width: 80%;" >
               Plan a Ride
             </td>
-            <td>
-
+          </tr>
+        </table>
+      </button>
+      </form>
+      <br>
+      <br>
+      <form method="link" action="{% url 'home' %}">
+        <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
+        <table align="center">
+          <tr>
+            <td style="width: 10%;">
+              <img class="navbar-logo" src="{% static 'rides.png' %}" width="50px" height="50px">
+            </td>
+            <td style="color: #353459; font-size: large;width: 80%;" >
+              Rides
             </td>
           </tr>
         </table>
@@ -55,16 +68,13 @@
       <br>
       <form method="link" action="{% url 'ambulance' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
-          <table>
+          <table align="center">
           <tr >
-            <td style="width: 40%;">
+            <td style="width: 10%;">
               <img class="navbar-logo" src="{% static 'ambulances.png' %}" width="50px" height="50px">
             </td>
-            <td style="color: #353459; font-size: large;">
+            <td style="color: #353459; font-size: large;width: 80%;">
               Ambulances
-            </td>
-            <td>
-
             </td>
           </tr>
         </table>
@@ -74,21 +84,35 @@
       <br>
       <form method="link" action="{% url 'drivers' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px; width: 60%;box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
-          <table>
+          <table align="center">
           <tr >
-            <td style="width: 40%;">
+            <td style="width: 10%;">
               <img class="navbar-logo" src="{% static 'drivers.png' %}" width="50px" height="50px">
             </td>
-            <td style="color: #353459; font-size: large;">
+            <td style="color: #353459; font-size: large;width: 80%;">
               Drivers
-            </td>
-            <td>
-
             </td>
           </tr>
         </table>
       </button>
       </form>
+      <br>
+      <br>
+      <form method="link" action="{% url 'home' %}">
+        <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
+        <table align="center">
+          <tr>
+            <td style="width: 10%;">
+              <img class="navbar-logo" src="{% static 'reports.png' %}" width="50px" height="50px">
+            </td>
+            <td style="color: #353459; font-size: large;width: 80%;">
+              Reports
+            </td>
+          </tr>
+        </table>
+      </button>
+      </form>
+
       {% else %}
       <div align="center" style="margin-top: 30%"> 
         <h1 style="color: #353459">Bubblance</h1>

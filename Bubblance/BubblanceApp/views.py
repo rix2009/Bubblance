@@ -178,16 +178,17 @@ def driver_info(request):
 		'firstname': user.firstname,
 		'lastname': user.lastname,
 		'phonenumber': user.phonenumber,
-		'usertype': user.usertype
+		'usertype': user.usertype,
+		'password': user.password
 	})
-	if request.method == "POST" and request.POST.get("save_form"):
+	if request.POST.get("save_form")=="True":
 		form = UpdateUserForm(request.POST)
 		if form.is_valid():
 			form.save()
 			messages.success(request, "user updated successfuly.")
-			return redirect("driver_info")
+			return redirect("drivers")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
-	return render (request=request, template_name="driver_info", context={"buser":user, "update_user_form":form, "save_form": True})
+	return render (request=request, template_name="driver_info.html", context={"buser":user, "update_user_form":form, "save_form": True})
 
 
 def disable_driver(request):
