@@ -144,3 +144,16 @@ class NewInstitution(ModelForm):
 		if commit:
 			institution.save()
 		return institution
+
+
+class UpdateInstitutionForm(ModelForm):
+	class Meta:	
+		model = Institution
+		fields = ("institution_name", "institution_adress", "in_institution",
+				"status")
+		
+	def save(self, commit=True):
+		inst = super(UpdateInstitutionForm, self).save(commit=False)
+		if commit:
+			inst.save()
+		return inst

@@ -11,8 +11,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse, path
 from datetime import datetime
-from .forms import NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm, UpdateUserForm
-from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew
+from .forms import UpdateInstitutionForm, NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm, UpdateUserForm, NewCustomer, NewInstitution
+from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 import requests
 
@@ -213,3 +213,50 @@ def edit_equipment(request):
 				e.amount = amount
 				e.save()
 	return ambulance_info(request)
+
+
+def institutions(request):
+	context = {}
+	context["inst"] = Institution.objects.all()
+	context["no_inst"] = False
+	if context["inst"].count() == 0:
+		context["no_inst"] = True
+	return render (request=request, template_name="institutions.html", context = context)
+
+
+def customers(request):
+	context = {}
+	context["customers"] = Customer.objects.all()
+	context["no_customer"] = False
+	if context["customers"].count() == 0:
+		context["no_customer"] = True
+	return render (request=request, template_name="customers.html", context = context)
+
+
+def add_institution(request):
+	form = NewInstitution()
+	if request.method == "POST":
+		form = NewInstitution(request.POST)
+		if form.is_valid():
+			inst = form.save()
+			messages.success(request, "Institution added successfuly." )
+			return redirect("institutions")
+		messages.error(request, "Unsuccessful registration. Invalid information.")
+	return render (request=request, template_name="add_institution.html", context={"add_institution_form":form})
+
+
+def institution_info(request):
+	inst = Institution.objects.get(inst_id = request.POST.get("inst"))
+	form = UpdateInstitutionForm(initial={
+		'institution_name': inst.institution_name,
+		'institution_adress': inst.institution_adress,
+		'in_institution': inst.in_institution,
+	})
+	if request.POST.get("save_form")=="True":
+		form = UpdateInstitutionForm(request.POST)
+		if form.is_valid():
+			form.save()
+			messages.success(request, "Institution updated successfuly.")
+			return redirect("Institutions")
+		messages.error(request, "Unsuccessful update. Invalid information.")
+	return render (request=request, template_name="institution_info.html", context={"inst":inst, "update_inst_form":form, "save_form": True})

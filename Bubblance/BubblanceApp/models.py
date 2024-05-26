@@ -50,6 +50,7 @@ class EqInAmbulance(models.Model):
 
 
 class Institution(models.Model):
+    inst_id = models.AutoField(primary_key=True)
     institution_name = models.CharField(max_length=100, unique=True)
     institution_adress = models.CharField(max_length=255)
     status = models.IntegerField(choices=Status.choices, default=1)
@@ -76,9 +77,9 @@ class CustomerRequest(models.Model):
     pick_up_time = models.DateTimeField(default=datetime.now())
     num_of_floors = models.PositiveIntegerField()
     pick_from_institution = models.BooleanField(default=False)
-    pickup_institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    pickup_institution = models.ForeignKey(Institution,related_name='pickup_ins', on_delete=models.CASCADE, blank=True, null=True)
     drop_at_institution = models.BooleanField(default=False)
-    dropoff_institution = models.ForeignKey(Institution, on_delete=models.CASCADE, blank=True, null=True)
+    dropoff_institution = models.ForeignKey(Institution,related_name='dropoff_ins', on_delete=models.CASCADE, blank=True, null=True)
     devision_name = models.CharField(max_length=100, blank=True, null=True)
     elvator_in_home = models.BooleanField(default=False)
     need_oxygen = models.BooleanField(default=False)

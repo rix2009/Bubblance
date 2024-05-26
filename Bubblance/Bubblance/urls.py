@@ -38,6 +38,10 @@ urlpatterns = [
     path("end_crew_time", views.end_crew_time, name = "end_crew_time"),
     path("disable_driver", views.disable_driver, name = "disable_driver"),
     path("edit_equipment", views.edit_equipment, name = "edit_equipment"),
+    path("institutions", views.institutions, name = "institutions"),
+    path("customers", views.customers, name = "customers"),
+    path("add_institution", views.add_institution, name = "add_institution"),
+    path("institution_info", views.institution_info, name = "institution_info"),
 
 ]
 
