@@ -29,8 +29,6 @@ class UpdateUserForm(ModelForm):
 		fields = ("email", "firstname", "lastname",
 				"phonenumber", "usertype")
 		
-
-
 	def save(self, commit=True):
 		user = super(UpdateUserForm, self).save(commit=False)
 		user.email = self.cleaned_data['email']
@@ -150,7 +148,7 @@ class UpdateInstitutionForm(ModelForm):
 	class Meta:	
 		model = Institution
 		fields = ("institution_name", "institution_adress", "in_institution",
-				"status")
+				"status","inst_id")
 		
 	def save(self, commit=True):
 		inst = super(UpdateInstitutionForm, self).save(commit=False)

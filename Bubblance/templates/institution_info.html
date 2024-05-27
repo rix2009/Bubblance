@@ -4,92 +4,30 @@
 {% block content %}      
 {% load crispy_forms_tags %}
 
-<!--ambulance--> 
+ 
 <div class="container py-5">
   <table style="width: 100%; color:#353459;">
     <tr >
-      <td style="left: 10%;"><h3>{{amb.ambulance_number}}</h3></td>
+      <td style="left: 10%;"><h3>{{inst.institution_name}}</h3></td>
       <td style="right: 10%; width: 30%;">
-        <form method="POST" action="{% url 'disable_ambulance' %}">
-        <input type="hidden" name="amb"  value="{{ amb.ambulance_id }}" > 
+        <form method="POST" action="{% url 'disable_driver' %}">
+        <input type="hidden" name="inst_id"  value="{{ inst.inst_id }}" > 
+        <input type="hidden" name="save_form" value="{{save_form}}">
         <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">
-        Disable</button></form>
+        Delete</button></form>
     </td>
     </tr>
   </table>
   <br>
-  {% if no_driver %}
-    <form method="POST" action="{% url 'driver_to_amb' %}">
-    {% csrf_token %}
-    <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
-    <table style="width: 100%;"><tr><td>
-      {{new_crew_form.driver_id|as_crispy_field}}
-    </td><td>
-      <button class="btn btn-primary" type="submit" style="background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-top: 6%; width: 100%;">Add a Driver</button>
-    </td></tr></table>
-    </form>
-  {% else %}
-  <table style="width: 100%;">
-    <tr>
-      <td style="font-size: x-large;">
-        <b>Driver</b>: {{driver.firstname}} {{driver.lastname}}
-      </td>
-      <td style="right: 10%; width: 30%;">
-        <form method="POST" action="{% url 'end_crew_time' %}">
-          {% csrf_token %}
-          <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
-          <input type="hidden" name="username" id="username" value="{{ driver.username }}" >
-          <button class="btn btn-primary" type="submit" style="background-color: #353459; border:#353459 1px solid;border-radius: 12px;margin-top: 6%; width: 100%;">Remove</button>
-        </form>
-      </td>
-    </tr>
-  </table>
-  
-  
-  {% endif %}
-  <br>
-  <form method="POST" action="{% url 'edit_equipment' %}">
-    <input type="hidden" name="amb" id="amb" value="{{ amb.ambulance_id }}" >
-    {% csrf_token %}
-    <table align="center" class="table-bordered" style="width: 90%;">
-      <tr style="background-color: #d4e3fc;" >
-        <td>
-          Equipment
-        </td>
-        <td style="width:15%; text-align: center;">
-          Amount
-        </td>
-      </tr>
-      {% for eq in equipment %}
-      <tr>
-        <td>
-          {{eq.eq_name}}
-        </td>
-        <td>
-          <input type="number" min="0" name="{{eq.eq_id}}" id="{{eq.eq_id}}" value="{{eq.amount}}" style="text-align: center; width: 100%;">
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-    <br>
-    <table style="width: 100%;">
-      <tr align="center" style="border: transparent;">
-        <td style="width: 50%;border: transparent;">
-          <button class="btn btn-primary" type="submit" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 90%;">Save changes</button>
-        </td>
-        <td style="width: 50%;border: transparent;">
-  </form>
-          <form method="POST" action="{% url 'create_equipment_form' %}">
-            <input type="hidden" name="amb" id="amb" value="{{ amb.ambulance_id }}" >
-            <input type="hidden" name="form_status" id="form_status" value="False" >
-            {% csrf_token %}
-            <input type="hidden" name="ambulance_id" id="ambulance_id" value="{{ amb.ambulance_id }}" >
-            <button class="btn btn-primary" type="submit" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 90%;">add an Equipment</button>
-          </form>
-        </td>
-      </tr>
-    </table>
+  <form method="POST">
+		{% csrf_token %}
+    {{update_inst_form|crispy}}
+    <input type="hidden" name="inst_id"  value="{{ inst.inst_id }}" > 
+    <input type="hidden" name="save_form" value="{{save_form}}">
+		<button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">Update Institution</button>
+	</form>
 </div>
+
 
 
 {% endblock %}

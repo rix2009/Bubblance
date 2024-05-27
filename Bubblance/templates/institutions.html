@@ -18,7 +18,7 @@
   {% for institution in inst %}
   <form method="POST" action="{% url 'institution_info' %}">
     {% csrf_token %}
-    <input type="hidden" name="inst" value="{{institution}}" > 
+    <input type="hidden" name="inst_id" value="{{institution.inst_id}}" > 
     <input type="hidden" name="save_form" value="False" >
     <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
       <table style="color: #353459; font-size: x-large; text-align: center;">

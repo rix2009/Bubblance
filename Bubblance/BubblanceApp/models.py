@@ -62,6 +62,7 @@ class Customer(models.Model):
         Private = 1
         Business = 2
 
+    customer_id = models.AutoField(primary_key=True)
     patient_name = models.CharField(max_length=60)
     contact_name = models.CharField(max_length=60)
     contact_phone = models.CharField(max_length=11)
@@ -96,6 +97,7 @@ class CustomerRequest(models.Model):
 
 
 class CustomerRide(models.Model):
+    cust_ride_id = models.AutoField(primary_key=True)
     customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)    
     Am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
     customer_req = models.ForeignKey(CustomerRequest, on_delete=models.CASCADE)
@@ -105,10 +107,3 @@ class CustomerRide(models.Model):
     number_of_stuff_needed = models.PositiveIntegerField()
     status = models.IntegerField(choices=Status.choices, default=1)
     charge_number = models.CharField(max_length=5, blank=True, null=True)
-
-
-class EquipmentInRide(models.Model):
-    eq_id = models.ForeignKey(EqInAmbulance, on_delete=models.CASCADE)
-    ride_id = models.ForeignKey(CustomerRide, on_delete=models.CASCADE)
-    amount = models.PositiveIntegerField()
-    status = models.IntegerField(choices=Status.choices, default=1)

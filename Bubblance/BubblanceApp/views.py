@@ -246,17 +246,17 @@ def add_institution(request):
 
 
 def institution_info(request):
-	inst = Institution.objects.get(inst_id = request.POST.get("inst"))
+	inst = Institution.objects.get(inst_id = request.POST.get("inst_id"))
 	form = UpdateInstitutionForm(initial={
 		'institution_name': inst.institution_name,
 		'institution_adress': inst.institution_adress,
 		'in_institution': inst.in_institution,
 	})
 	if request.POST.get("save_form")=="True":
-		form = UpdateInstitutionForm(request.POST)
+		form = UpdateInstitutionForm(request.POST, instance=inst)
 		if form.is_valid():
 			form.save()
 			messages.success(request, "Institution updated successfuly.")
-			return redirect("Institutions")
+			return redirect("institutions")
 		messages.error(request, "Unsuccessful update. Invalid information.")
 	return render (request=request, template_name="institution_info.html", context={"inst":inst, "update_inst_form":form, "save_form": True})
