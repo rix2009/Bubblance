@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
@@ -172,23 +172,19 @@ def end_crew_time(request):
 
 
 def driver_info(request):
-	user = BUser.objects.get(username = request.POST.get("buser"))
-	form = UpdateUserForm(initial={
-		'email': user.email,
-		'firstname': user.firstname,
-		'lastname': user.lastname,
-		'phonenumber': user.phonenumber,
-		'usertype': user.usertype,
-		'password': user.password
-	})
-	if request.POST.get("save_form")=="True":
-		form = UpdateUserForm(request.POST)
+	user = request.POST.get("buser") or request.GET.get("buser")
+	buser = get_object_or_404(BUser, username=user)
+
+	if request.method == 'POST' and request.POST.get("save_form") == "True":
+		form = UpdateUserForm(request.POST, instance=buser)
 		if form.is_valid():
 			form.save()
 			messages.success(request, "user updated successfuly.")
 			return redirect("drivers")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
-	return render (request=request, template_name="driver_info.html", context={"buser":user, "update_user_form":form, "save_form": True})
+	else:
+		form = UpdateUserForm(instance=buser)
+	return render (request=request, template_name="driver_info.html", context={"buser":buser, "update_user_form":form, "save_form": True})
 
 
 def disable_driver(request):
@@ -246,17 +242,17 @@ def add_institution(request):
 
 
 def institution_info(request):
-	inst = Institution.objects.get(inst_id = request.POST.get("inst_id"))
-	form = UpdateInstitutionForm(initial={
-		'institution_name': inst.institution_name,
-		'institution_adress': inst.institution_adress,
-		'in_institution': inst.in_institution,
-	})
-	if request.POST.get("save_form")=="True":
-		form = UpdateInstitutionForm(request.POST, instance=inst)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "Institution updated successfuly.")
-			return redirect("institutions")
-		messages.error(request, "Unsuccessful update. Invalid information.")
-	return render (request=request, template_name="institution_info.html", context={"inst":inst, "update_inst_form":form, "save_form": True})
+    inst_id = request.POST.get("inst_id") or request.GET.get("inst_id")
+    inst = get_object_or_404(Institution, inst_id=inst_id)
+    if request.method == 'POST' and request.POST.get("save_form") == "True":
+        form = UpdateInstitutionForm(request.POST, instance=inst)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Institution updated successfully.")
+            return redirect("institutions")
+        else:
+            messages.error(request, "Unsuccessful update. Invalid information.")
+    else:
+        form = UpdateInstitutionForm(instance=inst)
+    
+    return render(request, "institution_info.html", {"inst": inst, "update_inst_form": form, "save_form": True})

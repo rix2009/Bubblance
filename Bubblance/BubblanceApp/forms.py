@@ -5,7 +5,6 @@ from BubblanceApp.models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, 
 from django.forms import ModelForm
 
 
-# Create your forms here.
 
 class NewUserForm(UserCreationForm):
 	email = forms.EmailField(required=True)
@@ -14,7 +13,7 @@ class NewUserForm(UserCreationForm):
 		model = BUser
 		fields = ("username", "email", "password1", 
 			"password2", "firstname", "lastname", 
-			"id", "phonenumber", "usertype")
+			"israeliid", "phonenumber", "usertype")
 
 	def save(self, commit=True):
 		user = super(NewUserForm, self).save(commit=False)
@@ -23,15 +22,15 @@ class NewUserForm(UserCreationForm):
 			user.save()
 		return user
 
+
 class UpdateUserForm(ModelForm):
 	class Meta:	
 		model = BUser
 		fields = ("email", "firstname", "lastname",
-				"phonenumber", "usertype")
+				"phonenumber", "usertype",)
 		
 	def save(self, commit=True):
 		user = super(UpdateUserForm, self).save(commit=False)
-		user.email = self.cleaned_data['email']
 		if commit:
 			user.save()
 		return user
@@ -145,11 +144,25 @@ class NewInstitution(ModelForm):
 
 
 class UpdateInstitutionForm(ModelForm):
-	class Meta:	
+	class Meta:
 		model = Institution
-		fields = ("institution_name", "institution_adress", "in_institution",
-				"status","inst_id")
-		
+		fields = (
+            "institution_name",
+            "institution_adress",
+            "in_institution",
+            "status",
+            "inst_id"
+        )
+
+	def __init__(self, *args, **kwargs):
+		instance = kwargs.get('instance')
+		super(UpdateInstitutionForm, self).__init__(*args, **kwargs)
+		if instance:
+			excluded_ids = [instance.pk] + list(instance.children.values_list('pk', flat=True))
+			self.fields['in_institution'].queryset = Institution.objects.exclude(pk__in=excluded_ids)
+		else:
+			self.fields['in_institution'].queryset = Institution.objects.all()
+	
 	def save(self, commit=True):
 		inst = super(UpdateInstitutionForm, self).save(commit=False)
 		if commit:

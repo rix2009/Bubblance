@@ -54,8 +54,10 @@ class Institution(models.Model):
     institution_name = models.CharField(max_length=100, unique=True)
     institution_adress = models.CharField(max_length=255)
     status = models.IntegerField(choices=Status.choices, default=1)
-    in_institution = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+    in_institution = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='children')
 
+    def __str__(self):
+        return self.institution_name
 
 class Customer(models.Model):
     class CustomerType(models.IntegerChoices):
