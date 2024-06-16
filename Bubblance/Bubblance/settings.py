@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'BubblanceApp',
     'crispy_forms',
     'bootstrap4',
+    'formset',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -121,7 +122,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'BubblanceApp/static')
+    os.path.join(BASE_DIR, 'BubblanceApp/static'),
+    ('node_modules', BASE_DIR / 'node_modules'),
 ]
 
 STATIC_URL = 'static/'

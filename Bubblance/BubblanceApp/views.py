@@ -11,7 +11,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse, path
 from datetime import datetime
-from .forms import UpdateInstitutionForm, NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm, UpdateUserForm, NewCustomer, NewInstitution
+from .forms import UpdateInstitutionForm, NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm
+from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequestForm
 from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 import requests
@@ -256,3 +257,19 @@ def institution_info(request):
         form = UpdateInstitutionForm(instance=inst)
     
     return render(request, "institution_info.html", {"inst": inst, "update_inst_form": form, "save_form": True})
+
+
+def plan_a_ride(request):
+	form1 = NewCustomerForm()
+	form2 = CustomerRequestForm()
+	if request.method == "POST":
+		form1 = NewCustomerForm(request.POST)
+		form2 = CustomerRequestForm(request.POST)
+		if form1.is_valid() and form2.is_valid():
+			customer = form1.save()
+			form2.fields["customer_id"] = customer.customer_id
+			form2.save()
+			messages.success(request, "Request added successfuly." )
+			return redirect("home")
+		messages.error(request, "Unsuccessful Request. Invalid information.")
+	return render (request=request, template_name="plan_a_ride.html", context={"c_form":form1, "c_r_form":form2})
