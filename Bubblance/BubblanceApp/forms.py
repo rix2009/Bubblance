@@ -1,13 +1,15 @@
 from django import forms
 from datetime import datetime
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from BubblanceApp.models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, CustomerRequest, Customer, Institution
 from django.forms import ModelForm, HiddenInput, DateTimeInput
 from django.core.validators import EMPTY_VALUES
+from django_toggle_switch_widget.widgets import DjangoToggleSwitchWidget
 from bootstrap_datepicker_plus.widgets import DatePickerInput, TimePickerInput, DateTimePickerInput, MonthPickerInput, YearPickerInput
-
-
+BOOL_CHOICES = ((True, 'Yes'), (False, 'No'))
 
 
 
@@ -98,27 +100,38 @@ class CustomerRequestForm(ModelForm):
 	
 	def __init__(self, *args, **kwargs):
 		super(CustomerRequestForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
 		self.fields['customer_id'].widget = HiddenInput()
 		self.fields['pick_from_institution'].label = 'Pick-up from an Instiitution?'
-		# self.fields['pick_from_institution'].widget = forms.BooleanField(attrs = {'onchange': "change_visibility();"})
+		self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange':"change_visibility_pui()"})
 		self.fields['pickup_institution'].label = 'Choose a pick-up Instiitution'
+		# self.fields['pickup_institution'].widget = forms.Select(attrs={'id':'pickup_institution'})
+		self.helper.layout = Layout(Field('pickup_institution',id='pickup_institution', style='visibility=="collapse"'))
 		self.fields['pick_up_location'].label = 'Pick-up Address'
 		self.fields['num_of_floors'].label = 'Number of fleoors at home'
 		self.fields['elvator_in_home'].label = 'Home with Elevator?'
+		self.fields['elvator_in_home'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['drop_at_institution'].label = 'Drop-off at an Instiitution?'
+		self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['dropoff_institution'].label = 'Choose a drop-off Instiitution'
 		self.fields['drop_of_location'].label = 'Drop-off Address'
 		self.fields['pick_up_time'].label = 'Pick-up date and time'
-		self.fields['pick_up_time'].widget = DateTimeInput()
+		self.fields['pick_up_time'].widget = DateTimePickerInput()
 		self.fields['pick_up_time'].initial = datetime.now()
 		self.fields['return_trip'].label = 'Return trip needed?'
+		self.fields['return_trip'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['return_trip_pick_up_time'].label = 'Return trip pick-up date and time'
-		self.fields['return_trip_pick_up_time'].widget = DateTimeInput()
+		self.fields['return_trip_pick_up_time'].widget = DateTimePickerInput()
 		self.fields['two_stuff_needed'].label = 'Need more than one stuff member?'
+		self.fields['two_stuff_needed'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['need_oxygen'].label = 'Need Oxygen?'
+		self.fields['need_oxygen'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['need_stretcher'].label = 'Need Stretcher?'
+		self.fields['need_stretcher'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['need_wheel_chair'].label = 'Need Wheel chair?'
+		self.fields['need_wheel_chair'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['have_preferred_driver'].label = 'Have a favorite driver?'
+		self.fields['have_preferred_driver'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
 		self.fields['preferred_driver'].label = 'Pick a driver'
 		
 

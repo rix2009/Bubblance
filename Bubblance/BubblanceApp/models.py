@@ -5,6 +5,9 @@ from datetime import datetime
 
 
 # Create your models here.
+BOOL_CHOICES = ((True, 'Yes'), (False, 'No'))
+
+
 class Status(models.IntegerChoices):
     active = 1
     deactive = 2
@@ -74,26 +77,26 @@ class Customer(models.Model):
 
 
 class CustomerRequest(models.Model):
-    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)    
+    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)
     pick_up_location = models.CharField(max_length=255)
     drop_of_location = models.CharField(max_length=255)
     pick_up_time = models.DateTimeField(default=datetime.now())
     num_of_floors = models.PositiveIntegerField()
-    pick_from_institution = models.BooleanField(default=False)
+    pick_from_institution = models.BooleanField(default=False, choices=BOOL_CHOICES)
     pickup_institution = models.ForeignKey(Institution,related_name='pickup_ins', on_delete=models.CASCADE, blank=True, null=True)
     drop_at_institution = models.BooleanField(default=False)
     dropoff_institution = models.ForeignKey(Institution,related_name='dropoff_ins', on_delete=models.CASCADE, blank=True, null=True)
     devision_name = models.CharField(max_length=100, blank=True, null=True)
-    elvator_in_home = models.BooleanField(default=False)
-    need_oxygen = models.BooleanField(default=False)
-    need_stretcher = models.BooleanField(default=False)
-    need_wheel_chair = models.BooleanField(default=False)
+    elvator_in_home = models.BooleanField(default=False, choices=BOOL_CHOICES)
+    need_oxygen = models.BooleanField(default=False, choices=BOOL_CHOICES)
+    need_stretcher = models.BooleanField(default=False, choices=BOOL_CHOICES)
+    need_wheel_chair = models.BooleanField(default=False, choices=BOOL_CHOICES)
     patient_weight = models.PositiveIntegerField()
-    two_stuff_needed = models.BooleanField(default=False)
+    two_stuff_needed = models.BooleanField(default=False, choices=BOOL_CHOICES)
     number_of_stuff_needed = models.PositiveIntegerField(blank=True, null=True)
-    have_preferred_driver = models.BooleanField(default=False)
+    have_preferred_driver = models.BooleanField(default=False, choices=BOOL_CHOICES)
     preferred_driver = models.ForeignKey(BUser, blank=True, null=True, on_delete=models.CASCADE)
-    return_trip = models.BooleanField(default=False)
+    return_trip = models.BooleanField(default=False, choices=BOOL_CHOICES)
     return_trip_pick_up_time = models.DateTimeField(blank=True, null=True)
     status = models.IntegerField(choices=Status.choices, default=1)
 

@@ -1,5 +1,5 @@
-function change_visibility(self){
-    if (self.style.visibility == "")
-    {document.getElementById(self).style.visibility = "hidden";}
-    else{document.getElementById(self).style.visibility = "";}
+function change_visibility_pui(){
+    if (document.getElementById("pickup_institution").style.visibility == "visible")
+    {document.getElementById("pickup_institution").style.visibility = "collapse";}
+    else{document.getElementById("pickup_institution").style.visibility = "visible";}
     }

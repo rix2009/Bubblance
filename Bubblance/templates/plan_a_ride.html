@@ -12,8 +12,8 @@
     </tr>
   </table>
   <br>
-  {{ form.media }}
-  <form method="POST">
+  {{ c_r_form.media }}
+  <form method="POST" >
 		{% csrf_token %}
     {{c_form|crispy}}
     {{c_r_form|crispy}}
@@ -21,5 +21,9 @@
 		<button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">Submit</button>
 	</form>
 </div>
-
+<script>function change_visibility_pui(){
+  if (document.getElementById("pickup_institution").style.visibility == "visible")
+  {document.getElementById("pickup_institution").style.visibility = "collapse";}
+  else{document.getElementById("pickup_institution").style.visibility = "visible";}
+  }</script>
 {% endblock %}

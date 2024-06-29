@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'formset',
     'bootstrap_datepicker_plus',
+    'django_toggle_switch_widget',
 
 ]
 
@@ -131,6 +132,14 @@ STATICFILES_DIRS = [
 STATIC_URL = 'static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
+
+BOOTSTRAP_DATEPICKER_PLUS = {
+    "variant_options": {
+        "datetime": {
+            "format": "DD/MM/YYYY HH:mm",
+        },
+    }
+}
 
 GOOGLE_API_KEY = "add from notepad"
 

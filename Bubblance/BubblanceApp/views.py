@@ -16,8 +16,6 @@ from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequ
 from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 import requests
-from bootstrap_datepicker_plus.widgets import DateTimePickerInput
-
 
 # Create your views here.
 
