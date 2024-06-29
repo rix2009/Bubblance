@@ -4,7 +4,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.conf import settings
 from django.http import JsonResponse, HttpResponseRedirect
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, CreateView
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import AuthenticationForm
@@ -16,6 +16,8 @@ from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequ
 from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 import requests
+from bootstrap_datepicker_plus.widgets import DateTimePickerInput
+
 
 # Create your views here.
 

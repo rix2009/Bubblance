@@ -4,7 +4,6 @@
 {% block content %}      
 
 {% load crispy_forms_tags %}
-
 <!--plan a ride--> 
 <div class="container py-5">
   <table style="width: 100%; color:#353459;">
@@ -13,6 +12,7 @@
     </tr>
   </table>
   <br>
+  {{ form.media }}
   <form method="POST">
 		{% csrf_token %}
     {{c_form|crispy}}

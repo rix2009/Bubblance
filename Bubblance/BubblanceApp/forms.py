@@ -1,9 +1,12 @@
 from django import forms
+from datetime import datetime
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from BubblanceApp.models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, CustomerRequest, Customer, Institution
 from django.forms import ModelForm, HiddenInput, DateTimeInput
 from django.core.validators import EMPTY_VALUES
+from bootstrap_datepicker_plus.widgets import DatePickerInput, TimePickerInput, DateTimePickerInput, MonthPickerInput, YearPickerInput
+
 
 
 
@@ -97,15 +100,17 @@ class CustomerRequestForm(ModelForm):
 		super(CustomerRequestForm, self).__init__(*args, **kwargs)
 		self.fields['customer_id'].widget = HiddenInput()
 		self.fields['pick_from_institution'].label = 'Pick-up from an Instiitution?'
+		# self.fields['pick_from_institution'].widget = forms.BooleanField(attrs = {'onchange': "change_visibility();"})
 		self.fields['pickup_institution'].label = 'Choose a pick-up Instiitution'
 		self.fields['pick_up_location'].label = 'Pick-up Address'
-		self.fields['num_of_floors'].label = 'Number of floors at home'
+		self.fields['num_of_floors'].label = 'Number of fleoors at home'
 		self.fields['elvator_in_home'].label = 'Home with Elevator?'
 		self.fields['drop_at_institution'].label = 'Drop-off at an Instiitution?'
 		self.fields['dropoff_institution'].label = 'Choose a drop-off Instiitution'
 		self.fields['drop_of_location'].label = 'Drop-off Address'
 		self.fields['pick_up_time'].label = 'Pick-up date and time'
 		self.fields['pick_up_time'].widget = DateTimeInput()
+		self.fields['pick_up_time'].initial = datetime.now()
 		self.fields['return_trip'].label = 'Return trip needed?'
 		self.fields['return_trip_pick_up_time'].label = 'Return trip pick-up date and time'
 		self.fields['return_trip_pick_up_time'].widget = DateTimeInput()
