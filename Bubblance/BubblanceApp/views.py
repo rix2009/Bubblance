@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse, path
 from datetime import datetime
 from .forms import UpdateInstitutionForm, NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm
-from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequestForm
+from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequestForm, NewCustomerRide
 from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 import requests
@@ -268,8 +268,72 @@ def plan_a_ride(request):
 		if form1.is_valid() and form2.is_valid():
 			customer = form1.save()
 			form2.fields["customer_id"] = customer.customer_id
-			form2.save()
+			drive = form2.save()
+			request.session['drive'] = drive
 			messages.success(request, "Request added successfuly." )
-			return redirect("home")
+			return redirect("choose drivers")
 		messages.error(request, "Unsuccessful Request. Invalid information.")
 	return render (request=request, template_name="plan_a_ride.html", context={"c_form":form1, "c_r_form":form2})
+
+
+def choose_drivers(request):
+	if 'drive' in request.session:
+		drive = request.session['drive']
+		del request.session['drive']
+	ambulances = Ambulance.objects.filter(status=1)
+	drivers = []
+	for amb in ambulances:
+		drivers.append(BUser.objects.get(id= AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id)))
+	dep_time = drive.pick_up_time
+	fave = None
+	if drive.have_preferred_driver != None:
+		fave = drive.preferred_driver
+	top_drivers = find_best_drivers(api_key, drivers, drive, dep_time, fave)
+	form = NewCustomerRide()
+	if request.method == "POST":
+		form = NewCustomerRide(request.POST)
+		if form.is_valid():
+			form.save()
+			messages.success(request, "Ride added successfuly." )
+			return redirect("home")
+	return render (request=request, template_name="choose_driver.html", context={"form":form, "top_drivers":top_drivers})
+
+
+
+def get_travel_time(api_key, origin, destination, departure_time):
+    url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&departure_time={departure_time}&key={api_key}"
+    response = requests.get(url)
+    data = response.json()
+    if data['status'] == 'OK':
+        travel_time = data['routes'][0]['legs'][0]['duration']['value']  # duration in seconds
+        return travel_time
+    else:
+        raise Exception(f"Error fetching data from Google Maps API: {data['status']}")
+
+
+def find_best_drivers(api_key, drivers, new_request, departure_time, favorite_driver=None):
+    travel_times = []
+    
+    for driver in drivers:
+        try:
+            travel_time = get_travel_time(api_key, driver.current_location, new_request.pick_up_location, departure_time)
+            travel_times.append((driver, travel_time))
+        except Exception as e:
+            print(e)
+    
+    # Sort by travel time
+    travel_times.sort(key=lambda x: x[1])
+
+    best_drivers = []
+    
+    if favorite_driver:
+        best_drivers.append(favorite_driver)
+        for driver, travel_time in travel_times:
+            if driver != favorite_driver:
+                best_drivers.append(driver)
+                if len(best_drivers) == 2:
+                    break
+    else:
+        best_drivers = [driver for driver, travel_time in travel_times[:2]]
+
+    return best_drivers

@@ -4,7 +4,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from BubblanceApp.models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, CustomerRequest, Customer, Institution
+from BubblanceApp.models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, CustomerRequest, Customer, Institution, CustomerRide
 from django.forms import ModelForm, HiddenInput, DateTimeInput
 from django.core.validators import EMPTY_VALUES
 from django_toggle_switch_widget.widgets import DjangoToggleSwitchWidget
@@ -206,6 +206,33 @@ class NewInstitution(ModelForm):
 class UpdateInstitutionForm(ModelForm):
 	class Meta:
 		model = Institution
+		fields = (
+            "institution_name",
+            "institution_adress",
+            "in_institution",
+            "status",
+            "inst_id"
+        )
+
+	def __init__(self, *args, **kwargs):
+		instance = kwargs.get('instance')
+		super(UpdateInstitutionForm, self).__init__(*args, **kwargs)
+		if instance:
+			excluded_ids = [instance.pk] + list(instance.children.values_list('pk', flat=True))
+			self.fields['in_institution'].queryset = Institution.objects.exclude(pk__in=excluded_ids)
+		else:
+			self.fields['in_institution'].queryset = Institution.objects.all()
+	
+	def save(self, commit=True):
+		inst = super(UpdateInstitutionForm, self).save(commit=False)
+		if commit:
+			inst.save()
+		return inst
+	
+
+class NewCustomerRide(ModelForm):
+	class Meta:
+		model = CustomerRide
 		fields = (
             "institution_name",
             "institution_adress",
