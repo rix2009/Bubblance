@@ -64,14 +64,14 @@ class Institution(models.Model):
 
 class Customer(models.Model):
     class CustomerType(models.IntegerChoices):
-        Private = 1
-        Business = 2
+        Private = 0
+        Business = 1
 
     customer_id = models.AutoField(primary_key=True)
     patient_name = models.CharField(max_length=60)
     contact_name = models.CharField(max_length=60)
     contact_phone = models.CharField(max_length=11)
-    customer_type = models.IntegerField(choices=CustomerType.choices)
+    customer_type = models.IntegerField(choices=CustomerType.choices, default=0)
     institution_id = models.ForeignKey(Institution, blank=True, null=True, on_delete=models.CASCADE)
     status = models.IntegerField(choices=Status.choices, default=1)
 
@@ -91,9 +91,9 @@ class CustomerRequest(models.Model):
     need_oxygen = models.BooleanField(default=False, choices=BOOL_CHOICES)
     need_stretcher = models.BooleanField(default=False, choices=BOOL_CHOICES)
     need_wheel_chair = models.BooleanField(default=False, choices=BOOL_CHOICES)
-    patient_weight = models.PositiveIntegerField()
+    # patient_weight = models.PositiveIntegerField(blank=True, null=True)
     two_stuff_needed = models.BooleanField(default=False, choices=BOOL_CHOICES)
-    number_of_stuff_needed = models.PositiveIntegerField(blank=True, null=True)
+    # number_of_stuff_needed = models.PositiveIntegerField(blank=True, null=True)
     have_preferred_driver = models.BooleanField(default=False, choices=BOOL_CHOICES)
     preferred_driver = models.ForeignKey(BUser, blank=True, null=True, on_delete=models.CASCADE)
     return_trip = models.BooleanField(default=False, choices=BOOL_CHOICES)
@@ -105,10 +105,12 @@ class CustomerRide(models.Model):
     cust_ride_id = models.AutoField(primary_key=True)
     customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)    
     Am_id = models.ForeignKey(Ambulance, on_delete=models.CASCADE)
+    driver_id = models.ForeignKey(BUser, on_delete=models.CASCADE)
     customer_req = models.ForeignKey(CustomerRequest, on_delete=models.CASCADE)
     pick_up_location = models.CharField(max_length=100)
     drop_of_location = models.CharField(max_length=100)
     pick_up_time = models.DateTimeField(default=datetime.now())
+    drop_of_time = models.DateTimeField(default=datetime.now())
     number_of_stuff_needed = models.PositiveIntegerField()
     status = models.IntegerField(choices=Status.choices, default=1)
     charge_number = models.CharField(max_length=5, blank=True, null=True)

@@ -89,106 +89,86 @@ class EqupmentInAmbulanceForm(ModelForm):
 	
 
 class CustomerRequestForm(ModelForm):
-	class Meta:
-		model = CustomerRequest
-		fields = ("customer_id","pick_from_institution", "pickup_institution", "pick_up_location",
-			"num_of_floors", "elvator_in_home",
-			"drop_at_institution","dropoff_institution","drop_of_location",
-			"pick_up_time","return_trip", "return_trip_pick_up_time",
-			"two_stuff_needed", "need_oxygen", "need_stretcher", "need_wheel_chair",
-			"have_preferred_driver",  "preferred_driver")
-	
-	def __init__(self, *args, **kwargs):
-		super(CustomerRequestForm, self).__init__(*args, **kwargs)
-		self.helper = FormHelper()
-		self.fields['customer_id'].widget = HiddenInput()
-		self.fields['pick_from_institution'].label = 'Pick-up from an Instiitution?'
-		self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange':"change_visibility_pui()"})
-		self.fields['pickup_institution'].label = 'Choose a pick-up Instiitution'
-		# self.fields['pickup_institution'].widget = forms.Select(attrs={'id':'pickup_institution'})
-		self.helper.layout = Layout(Field('pickup_institution',id='pickup_institution', style='visibility=="collapse"'))
-		self.fields['pick_up_location'].label = 'Pick-up Address'
-		self.fields['num_of_floors'].label = 'Number of fleoors at home'
-		self.fields['elvator_in_home'].label = 'Home with Elevator?'
-		self.fields['elvator_in_home'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['drop_at_institution'].label = 'Drop-off at an Instiitution?'
-		self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['dropoff_institution'].label = 'Choose a drop-off Instiitution'
-		self.fields['drop_of_location'].label = 'Drop-off Address'
-		self.fields['pick_up_time'].label = 'Pick-up date and time'
-		self.fields['pick_up_time'].widget = DateTimePickerInput()
-		self.fields['pick_up_time'].initial = datetime.now()
-		self.fields['return_trip'].label = 'Return trip needed?'
-		self.fields['return_trip'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['return_trip_pick_up_time'].label = 'Return trip pick-up date and time'
-		self.fields['return_trip_pick_up_time'].widget = DateTimePickerInput()
-		self.fields['two_stuff_needed'].label = 'Need more than one stuff member?'
-		self.fields['two_stuff_needed'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['need_oxygen'].label = 'Need Oxygen?'
-		self.fields['need_oxygen'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['need_stretcher'].label = 'Need Stretcher?'
-		self.fields['need_stretcher'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['need_wheel_chair'].label = 'Need Wheel chair?'
-		self.fields['need_wheel_chair'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['have_preferred_driver'].label = 'Have a favorite driver?'
-		self.fields['have_preferred_driver'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-		self.fields['preferred_driver'].label = 'Pick a driver'
-		
+    class Meta:
+        model = CustomerRequest
+        fields = ("customer_id", "pick_from_institution", "pickup_institution", "pick_up_location",
+                  "num_of_floors", "elvator_in_home", "drop_at_institution", "dropoff_institution",
+                  "drop_of_location", "pick_up_time", "return_trip", "return_trip_pick_up_time",
+                  "two_stuff_needed", "need_oxygen", "need_stretcher", "need_wheel_chair",
+                  "have_preferred_driver", "preferred_driver")
 
-	def clean(self):
-		p_u_i = self.cleaned_data.get('pick_from_institution', False)
-		if p_u_i:
-			p_u_inst = self.cleaned_data.get('pickup_institution', None)
-			if p_u_inst in EMPTY_VALUES:
-				self._errors['pickup_institution'] = self.error_class([
-                'Institution is required'])
-		d_o_i = self.cleaned_data.get('drop_at_institution', False)		
-		if d_o_i:
-			d_o_inst = self.cleaned_data.get('dropoff_institution', None)
-			if d_o_inst in EMPTY_VALUES:
-				self._errors['dropoff_institution'] = self.error_class([
-                'Institution is required'])
-		r_t_n = self.cleaned_data.get('return_trip', False)		
-		if r_t_n:
-			r_t_n_p_u_t = self.cleaned_data.get('return_trip_pick_up_time', None)
-			if r_t_n_p_u_t in EMPTY_VALUES:
-				self._errors['return_trip_pick_up_time'] = self.error_class([
-                'Institution is required'])
-		f_driver = self.cleaned_data.get('have_preferred_driver', False)
-		if f_driver:
-			p_f_driver = self.cleaned_data.get('preferred_driver', None)
-			if p_f_driver in EMPTY_VALUES:
-				self._errors['preferred_driver'] = self.error_class([
-                'Favorite driver is required'])
-		return self.cleaned_data
+    def __init__(self, *args, **kwargs):
+        super(CustomerRequestForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.fields['customer_id'].widget = HiddenInput()
+        self.fields['pick_from_institution'].required=False
+        self.fields['pick_from_institution'].label = 'Pick-up from an Institution?'
+        self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('pick_from_institution', 'pickup_institution')"})
+        self.fields['pickup_institution'].required=False
+        self.fields['pickup_institution'].label = 'Choose a pick-up Institution'
 
-	def save(self, commit=True):
-		req = super(CustomerRequestForm, self).save(commit=False)
-		if commit:
-			req.save()
-		return req
+        self.fields['drop_at_institution'].required=False
+        self.fields['drop_at_institution'].label = 'Drop-off at an Institution?'
+        self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('drop_at_institution', 'dropoff_institution')"})
+        self.fields['dropoff_institution'].required=False
+        self.fields['dropoff_institution'].label = 'Choose a drop-off Institution'
+
+        self.fields['return_trip'].required=False
+        self.fields['return_trip'].label = 'Return trip needed?'
+        self.fields['return_trip'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('return_trip', 'return_trip_pick_up_time')"})
+        self.fields['return_trip_pick_up_time'].required=False
+        self.fields['return_trip_pick_up_time'].label = 'Return trip pick-up date and time'
+
+        self.fields['have_preferred_driver'].required=False
+        self.fields['have_preferred_driver'].label = 'Have a favorite driver?'
+        self.fields['have_preferred_driver'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('have_preferred_driver', 'preferred_driver')"})
+        self.fields['preferred_driver'].required=False
+        self.fields['preferred_driver'].label = 'Pick a driver'
+
+        self.fields['elvator_in_home'].required=False
+        self.fields['elvator_in_home'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['two_stuff_needed'].required=False
+        self.fields['two_stuff_needed'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['need_oxygen'].required=False
+        self.fields['need_oxygen'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['need_stretcher'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['need_stretcher'].required=False
+        self.fields['need_wheel_chair'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['need_wheel_chair'].required=False
+
+        self.fields['pick_up_time'].widget = DateTimePickerInput()
+        self.fields['return_trip_pick_up_time'].widget = DateTimePickerInput()
 
 
 class NewCustomerForm(ModelForm):
-	class Meta:
-		model = Customer
-		fields = ("customer_type",
-			 "institution_id","patient_name","contact_name", "contact_phone")
-		
-	def clean(self):
-		type = self.cleaned_data.get('customer_type', False)
-		if type == '2':
-			inst = self.cleaned_data.get('institution_id', None)
-			if inst in EMPTY_VALUES:
-				self._errors['institution_id'] = self.error_class([
-                'Institution is required'])
-		return self.cleaned_data
+    class Meta:
+        model = Customer
+        fields = ("customer_type", "institution_id", "patient_name", "contact_name", "contact_phone")
+    
+    def __init__(self, *args, **kwargs):
+        super(NewCustomerForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.fields['customer_type'].label = 'Buisness customer?'
+        self.fields['customer_type'].required = False
+        self.fields['customer_type'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('customer_type', 'institution_id')"})
+        self.fields['institution_id'].required = False
 
-	def save(self, commit=True):
-		customer = super(NewCustomerForm, self).save(commit=False)
-		if commit:
-			customer.save()
-		return customer
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        customer_type = cleaned_data.get('customer_type')
+        if customer_type == '2':
+            institution_id = cleaned_data.get('institution_id')
+            if not institution_id:
+                self.add_error('institution_id', 'Institution is required')
+        return cleaned_data
+
+
+    def save(self, commit=True):
+        customer = super(NewCustomerForm, self).save(commit=False)
+        if commit:
+            customer.save()
+        return customer
 
 
 class NewInstitution(ModelForm):
@@ -206,33 +186,6 @@ class NewInstitution(ModelForm):
 class UpdateInstitutionForm(ModelForm):
 	class Meta:
 		model = Institution
-		fields = (
-            "institution_name",
-            "institution_adress",
-            "in_institution",
-            "status",
-            "inst_id"
-        )
-
-	def __init__(self, *args, **kwargs):
-		instance = kwargs.get('instance')
-		super(UpdateInstitutionForm, self).__init__(*args, **kwargs)
-		if instance:
-			excluded_ids = [instance.pk] + list(instance.children.values_list('pk', flat=True))
-			self.fields['in_institution'].queryset = Institution.objects.exclude(pk__in=excluded_ids)
-		else:
-			self.fields['in_institution'].queryset = Institution.objects.all()
-	
-	def save(self, commit=True):
-		inst = super(UpdateInstitutionForm, self).save(commit=False)
-		if commit:
-			inst.save()
-		return inst
-	
-
-class NewCustomerRide(ModelForm):
-	class Meta:
-		model = CustomerRide
 		fields = (
             "institution_name",
             "institution_adress",

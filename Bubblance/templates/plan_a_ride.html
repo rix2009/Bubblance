@@ -4,7 +4,6 @@
 {% block content %}      
 
 {% load crispy_forms_tags %}
-<!--plan a ride--> 
 <div class="container py-5">
   <table style="width: 100%; color:#353459;">
     <tr >
@@ -13,17 +12,33 @@
   </table>
   <br>
   {{ c_r_form.media }}
-  <form method="POST" >
-		{% csrf_token %}
-    {{c_form|crispy}}
-    {{c_r_form|crispy}}
-
-		<button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">Submit</button>
-	</form>
+  <form method="post">
+    {% csrf_token %}
+    {{ c_form|crispy }}
+    {{ c_r_form|crispy }}
+    <button class="btn btn-primary" type="submit" style="width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;">
+      Submit Request
+    </button>
+  </form>
 </div>
-<script>function change_visibility_pui(){
-  if (document.getElementById("pickup_institution").style.visibility == "visible")
-  {document.getElementById("pickup_institution").style.visibility = "collapse";}
-  else{document.getElementById("pickup_institution").style.visibility = "visible";}
-  }</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Initialize visibility on page load
+    toggleVisibility('customer_type', 'institution_id');
+    toggleVisibility('pick_from_institution', 'pickup_institution');
+    toggleVisibility('drop_at_institution', 'dropoff_institution');
+    toggleVisibility('return_trip', 'return_trip_pick_up_time');
+    toggleVisibility('have_preferred_driver', 'preferred_driver');
+  });
+
+  function toggleVisibility(toggleField, targetField) {
+    var toggle = document.getElementById('id_' + toggleField);
+    var target = document.getElementById('div_id_' + targetField).closest('.form-group');
+    if (toggle.checked) {
+      target.style.display = 'block';
+    } else {
+      target.style.display = 'none';
+    }
+  }
+</script>
 {% endblock %}

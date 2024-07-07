@@ -1,0 +1,21 @@
+{% extends "header.html" %}
+{% load static %}
+
+{% block content %}  
+
+  <h2>Select a Driver</h2>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="customer_request_id" value="{{ drive_request.id }}">
+    <ul>
+      {% for driver in best_drivers %}
+        <li>
+          <input type="radio" id="driver_{{ driver.id }}" name="selected_driver" value="{{ driver.id }}">
+          <label for="driver_{{ driver.id }}">{{ driver.name }}</label>
+        </li>
+      {% endfor %}
+    </ul>
+    <button type="submit" name="select_driver">Select Driver</button>
+  </form>
+
+  {% endblock %}
