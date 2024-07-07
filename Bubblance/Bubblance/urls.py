@@ -42,7 +42,8 @@ urlpatterns = [
     path("customers", views.customers, name = "customers"),
     path("add_institution", views.add_institution, name = "add_institution"),
     path("institution_info", views.institution_info, name = "institution_info"),
-    path("pla_a_ride", views.plan_a_ride, name = "plan_a_ride"),
+    path("plan_a_ride", views.plan_a_ride, name = "plan_a_ride"),
+    path("best_drivers/<int:ride_request_id>/", views.best_drivers, name="best_drivers"),  # Added URL pattern for best drivers
 
 ]
 
