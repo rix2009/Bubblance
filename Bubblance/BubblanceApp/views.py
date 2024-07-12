@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
+from collections import defaultdict
 import time
 from django.conf import settings
 from django.http import JsonResponse, HttpResponseRedirect
@@ -11,7 +12,7 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse, path
-from datetime import datetime
+from datetime import datetime, timedelta
 from .forms import UpdateInstitutionForm, NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm
 from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequestForm
 from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer, CustomerRide, CustomerRequest
@@ -260,115 +261,6 @@ def institution_info(request):
     return render(request, "institution_info.html", {"inst": inst, "update_inst_form": form, "save_form": True})
 
 
-# def plan_a_ride(request):
-#     form1 = NewCustomerForm()
-#     form2 = CustomerRequestForm()
-    
-#     ambulances = Ambulance.objects.filter(status=1)
-#     drivers = []
-#     for amb in ambulances:
-#         crews = AmbulanceCrew.objects.filter(ambulance_id=amb.ambulance_id, end_time__isnull=True)
-#         for crew in crews:
-#             driver = BUser.objects.get(username=crew.driver_id)
-#             drivers.append(driver)
-    
-#     if request.method == "POST":
-#         if "select_driver" in request.POST:
-#             selected_driver_id = request.POST.get("selected_driver")
-#             customer_request_id = request.POST.get("customer_request_id")
-#             selected_driver = BUser.objects.get(id=selected_driver_id)
-#             customer_request = CustomerRequest.objects.get(id=customer_request_id)
-#             customer = customer_request.customer_id
-#             ambulance = Ambulance.objects.get(id=AmbulanceCrew.objects.filter(driver_id=selected_driver.id).first().ambulance_id)
-            
-#             CustomerRide.objects.create(
-#                 customer_id=customer,
-#                 Am_id=ambulance,
-#                 driver_id=selected_driver,
-#                 customer_req=customer_request,
-#                 pick_up_location=customer_request.pick_up_location,
-#                 drop_of_location=customer_request.drop_of_location,
-#                 pick_up_time=customer_request.pick_up_time,
-#                 drop_of_time=None,  # This can be updated later
-#                 number_of_stuff_needed=customer_request.number_of_stuff_needed if customer_request.two_stuff_needed else 1,
-#                 status=1
-#             )
-#             messages.success(request, "Customer ride successfully created.")
-#             return redirect("home")
-
-#         form1 = NewCustomerForm(request.POST)
-#         form2 = CustomerRequestForm(request.POST)
-#         if form1.is_valid() and form2.is_valid():
-#             customer = form1.save()
-#             new_request = form2.save(commit=False)
-#             new_request.customer_id = customer
-#             departure_time = int(time.mktime(new_request.pick_up_time.timetuple()))
-#             favorite_driver = new_request.preferred_driver if new_request.have_preferred_driver else None
-            
-#             best_drivers = find_best_drivers(settings.GOOGLE_MAPS_API_KEY, drivers, new_request, departure_time, favorite_driver)
-#             if best_drivers:
-#                 new_request.save()
-#                 return render(request, 'best_drivers.html', {'best_drivers': best_drivers, 'drive_request': new_request})
-#             else:
-#                 messages.error(request, "No suitable driver found.")
-#                 return redirect("plan_a_ride")
-#         messages.error(request, "Unsuccessful Request. Invalid information.")
-    
-#     return render(request, 'plan_a_ride.html', context={"c_form": form1, "c_r_form": form2, "drivers": drivers})
-
-def plan_a_ride(request):
-    if request.method == "POST":
-        c_form = NewCustomerForm(request.POST)
-        c_r_formset = CustomerRequestForm(request.POST, request.FILES)
-        
-        if c_form.is_valid() and c_r_formset.is_valid():
-            customer_request = c_form.save()
-            c_r_formset.instance = customer_request
-            c_r_formset.save()
-            messages.success(request, 'Ride request created successfully!')
-            return redirect('home')
-    else:
-        c_form = NewCustomerForm()
-        c_r_formset = CustomerRequestForm()
-    
-    context = {
-        'c_form': c_form,
-        'c_r_formset': c_r_formset
-    }
-    return render(request, 'plan_a_ride.html', context)
-
-
-def best_drivers(request, customer_request_id):
-    customer_request = get_object_or_404(CustomerRequest, id=customer_request_id)
-    
-    ambulances = Ambulance.objects.filter(status=1)
-    drivers = []
-    for amb in ambulances:
-        crews = AmbulanceCrew.objects.filter(ambulance_id=amb.ambulance_id, end_time__isnull=True)
-        for crew in crews:
-            driver = BUser.objects.get(username=crew.driver_id)
-            drivers.append(driver)
-    
-    departure_time = customer_request.pick_up_time.timestamp()
-
-    best_drivers = find_best_drivers(settings.GOOGLE_MAPS_API_KEY, drivers, customer_request, departure_time)
-    
-    if request.method == "POST":
-        selected_driver_id = request.POST.get('selected_driver')
-        selected_driver = get_object_or_404(Driver, id=selected_driver_id)
-        customer_request.assigned_driver = selected_driver
-        customer_request.save()
-        messages.success(request, 'Driver assigned successfully!')
-        return redirect('home')
-    
-    context = {
-        'customer_request': customer_request,
-        'best_drivers': best_drivers,
-    }
-    
-    return render(request, 'best_drivers.html', context)
-    
-
 def get_travel_time(api_key, origin, destination, departure_time):
     url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&departure_time={departure_time}&key={api_key}"
     response = requests.get(url)
@@ -380,43 +272,130 @@ def get_travel_time(api_key, origin, destination, departure_time):
         raise Exception(f"Error fetching data from Google Maps API: {data['status']}")
 
 
-def find_best_drivers(api_key, drivers, new_request, departure_time, favorite_driver=None):
-    travel_times = []
+def active_drivers():
+	ambulances = Ambulance.objects.filter(status=1)
+	drivers = []
+	for amb in ambulances:
+		crews = AmbulanceCrew.objects.filter(ambulance_id=amb.ambulance_id, end_time__isnull=True)
+		for crew in crews:
+			driver = BUser.objects.get(username=crew.driver_id)
+			drivers.append(driver)
+	return drivers
+	
+def get_active_rides_by_driver():
+    # Get all active drivers
+    drivers = active_drivers()
     
-    for driver in drivers:
-        # Check driver's current assignments
-        ongoing_drives = CustomerRide.objects.filter(driver=driver, end_time__gt=new_request.pick_up_time).order_by('end_time')
-        
-        # If there are ongoing drives, get the end time of the last one
-        if ongoing_drives.exists():
-            last_drive = ongoing_drives.last()
-            available_time = last_drive.end_time
-        else:
-            available_time = datetime.now()
-        
-        # Calculate time to finish current drive and reach new pick up location
-        if available_time > new_request.pick_up_time:
-            continue
-        
-        try:
-            travel_time = get_travel_time(api_key, driver.current_location, new_request.pick_up_location, departure_time)
-            travel_times.append((driver, travel_time))
-        except Exception as e:
-            print(f"Error calculating travel time for driver {driver.id}: {e}")
+    # Initialize a dictionary to store rides by driver
+    driver_rides = defaultdict(list)
     
-    # Sort by travel time
-    travel_times.sort(key=lambda x: x[1])
+    # Get all active rides and sort them by drop_off_time
+    active_rides = CustomerRide.objects.filter(status=1).order_by('drop_of_time')
+    
+    # Iterate over the active rides and categorize them by driver
+    for ride in active_rides:
+        driver = ride.driver_id
+        if driver in drivers:
+            ride_info = {
+                'origin': ride.pick_up_location,
+                'destination': ride.drop_of_location,
+                'start_time': ride.pick_up_time,
+                'finish_time': ride.drop_of_time
+            }
+            driver_rides[driver].append(ride_info)
+    
+    return driver_rides
 
+
+def get_best_drivers_for_request(request, api_key):
+    preferred_driver = None
     best_drivers = []
+
+    if request.have_preferred_driver and request.preferred_driver:
+        preferred_driver = request.preferred_driver
+        preferred_driver_arrival_time = get_travel_time(
+            api_key,
+            preferred_driver.current_location,
+            request.pick_up_location,
+            datetime.now()
+        )
+        preferred_driver_arrival_time = datetime.now() + timedelta(seconds=preferred_driver_arrival_time)
+
+    active_drivers_rides = get_active_rides_by_driver()
     
-    if favorite_driver:
-        best_drivers.append(favorite_driver)
-        for driver, travel_time in travel_times:
-            if driver != favorite_driver:
-                best_drivers.append(driver)
-                if len(best_drivers) == 2:
-                    break
+    available_drivers = []
+    for driver, rides in active_drivers_rides.items():
+        last_ride = rides[-1] if rides else None
+        if not last_ride or (last_ride and last_ride['finish_time'] <= request.pick_up_time):
+            travel_time = get_travel_time(
+                api_key,
+                last_ride['destination'] if last_ride else driver.current_location,
+                request.pick_up_location,
+                request.pick_up_time
+            )
+            available_drivers.append((driver, travel_time))
+
+    available_drivers.sort(key=lambda x: x[1])
+
+    if preferred_driver:
+        best_drivers = [(preferred_driver, preferred_driver_arrival_time)] + available_drivers[:2]
     else:
-        best_drivers = [driver for driver, travel_time in travel_times[:2]]
+        best_drivers = available_drivers[:2]
 
     return best_drivers
+
+def plan_a_ride(request):
+    if request.method == 'POST':
+        c_form = NewCustomerForm(request.POST)
+        c_r_form = CustomerRequestForm(request.POST)
+        
+        if c_form.is_valid() and c_r_form.is_valid():
+            new_customer = c_form.save()
+            new_customer_request = c_r_form.save(commit=False)
+            new_customer_request.customer_id = new_customer
+            new_customer_request.save()
+            
+            return redirect('pick_a_driver', request_id=new_customer_request.id)
+    else:
+        c_form = NewCustomerForm()
+        c_r_form = CustomerRequestForm()
+    
+    return render(request, 'plan_a_ride.html', {'c_form': c_form, 'c_r_form': c_r_form})
+
+def pick_a_driver(request, request_id):
+    customer_request = get_object_or_404(CustomerRequest, pk=request_id)
+    api_key = settings.GOOGLE_API_KEY
+    best_drivers = get_best_drivers_for_request(customer_request, api_key)
+    
+    context = {
+        'customer_request': customer_request,
+        'best_drivers': best_drivers,
+    }
+    return render(request, 'pick_a_driver.html', context)
+
+
+def complete_ride(request, request_id, driver_id):
+    customer_request = get_object_or_404(CustomerRequest, pk=request_id)
+    driver = get_object_or_404(BUser, pk=driver_id)
+    
+    crew = AmbulanceCrew.objects.filter(driver_id=driver, end_time__isnull=True).first()
+    ambulance = crew.ambulance_id
+    
+    pick_up_time = customer_request.pick_up_time
+    travel_time = get_travel_time(settings.GOO, customer_request.pick_up_location, customer_request.drop_of_location, pick_up_time)
+    drop_of_time = pick_up_time + timedelta(seconds=travel_time)
+    
+    CustomerRide.objects.create(
+        customer_id=customer_request.customer_id,
+        Am_id=ambulance,
+        driver_id=driver,
+        customer_req=customer_request,
+        pick_up_location=customer_request.pick_up_location,
+        drop_of_location=customer_request.drop_of_location,
+        pick_up_time=pick_up_time,
+        drop_of_time=drop_of_time,
+        number_of_stuff_needed=customer_request.two_stuff_needed + 1,
+        status=1,
+    )
+    
+    return redirect('home')

@@ -1,12 +1,12 @@
 {% extends "header.html" %}
 {% load static %}
-
-{% block content %}      
-
 {% load crispy_forms_tags %}
+
+{% block content %}
+
 <div class="container py-5">
   <table style="width: 100%; color:#353459;">
-    <tr >
+    <tr>
       <td style="left: 10%;"><h3>Plan a Ride</h3></td>
     </tr>
   </table>
@@ -21,6 +21,18 @@
     </button>
   </form>
 </div>
+
+{% if best_drivers %}
+<div class="container py-5">
+  <h4>Best Drivers</h4>
+  <ul>
+    {% for driver, arrival_time in best_drivers %}
+    <li>{{ driver.firstname }} {{ driver.lastname }} - Arrival Time: {{ arrival_time }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     // Initialize visibility on page load
@@ -41,4 +53,5 @@
     }
   }
 </script>
+
 {% endblock %}

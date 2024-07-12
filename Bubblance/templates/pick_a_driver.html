@@ -1,0 +1,24 @@
+<!-- pick_a_driver.html -->
+{% extends "header.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container py-5">
+  <h3>Pick a Driver</h3>
+  <div class="row">
+    {% for driver, arrival_time in best_drivers %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">{{ driver.firstname }} {{ driver.lastname }}</h5>
+          <p class="card-text">Estimated Arrival Time: {{ arrival_time }}</p>
+          <a href="{% url 'complete_ride' customer_request.id driver.id %}" class="btn btn-primary">Select Driver</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
