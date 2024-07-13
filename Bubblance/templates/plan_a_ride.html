@@ -11,6 +11,7 @@
     </tr>
   </table>
   <br>
+  {{ c_form.media }}
   {{ c_r_form.media }}
   <form method="post">
     {% csrf_token %}
@@ -34,24 +35,48 @@
 {% endif %}
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
     // Initialize visibility on page load
+    initializeVisibility();
+    
+    // Observe the body for new elements
+    var targetNode = document.body;
+    var config = { childList: true, subtree: true };
+
+    var callback = function(mutationsList, observer) {
+        for (var mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Re-initialize visibility when new elements are added
+                        initializeVisibility();
+                    }
+                });
+            }
+        }
+    };
+
+    var observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
+});
+
+function initializeVisibility() {
     toggleVisibility('customer_type', 'institution_id');
     toggleVisibility('pick_from_institution', 'pickup_institution');
     toggleVisibility('drop_at_institution', 'dropoff_institution');
     toggleVisibility('return_trip', 'return_trip_pick_up_time');
     toggleVisibility('have_preferred_driver', 'preferred_driver');
-  });
+}
 
-  function toggleVisibility(toggleField, targetField) {
+function toggleVisibility(toggleField, targetField) {
     var toggle = document.getElementById('id_' + toggleField);
     var target = document.getElementById('div_id_' + targetField).closest('.form-group');
     if (toggle.checked) {
-      target.style.display = 'block';
+        target.style.display = 'block';
     } else {
-      target.style.display = 'none';
+        target.style.display = 'none';
     }
-  }
+}
 </script>
 
 {% endblock %}

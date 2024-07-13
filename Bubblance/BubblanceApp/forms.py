@@ -101,6 +101,7 @@ class CustomerRequestForm(ModelForm):
         super(CustomerRequestForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.fields['customer_id'].widget = HiddenInput()
+        self.fields['customer_id'].required=False
         self.fields['pick_from_institution'].required=False
         self.fields['pick_from_institution'].label = 'Pick-up from an Institution?'
         self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('pick_from_institution', 'pickup_institution')"})
@@ -150,26 +151,26 @@ class NewCustomerForm(ModelForm):
         self.helper = FormHelper()
         self.fields['customer_type'].label = 'Buisness customer?'
         self.fields['customer_type'].required = False
-        self.fields['customer_type'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('customer_type', 'institution_id')"})
+        # self.fields['customer_type'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('customer_type', 'institution_id')"})
+        self.fields["customer_type"].widget.attrs.update({'onchange': "toggleVisibility('have_preferred_driver', 'preferred_driver')"})
         self.fields['institution_id'].required = False
 
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        customer_type = cleaned_data.get('customer_type')
-        if customer_type == '2':
-            institution_id = cleaned_data.get('institution_id')
-            if not institution_id:
-                self.add_error('institution_id', 'Institution is required')
-        return cleaned_data
-
+    def clean_customer_type(self):
+        customer_type = self.cleaned_data['customer_type']
+        if customer_type in [0, '0']:
+            return False
+        elif customer_type in [1, '1']:
+            return True
+        return customer_type
 
     def save(self, commit=True):
-        customer = super(NewCustomerForm, self).save(commit=False)
-        if commit:
-            customer.save()
-        return customer
+        instance = super(NewCustomerForm, self).save(commit=False)
+        # Ensure customer_type is stored as 0/1
+        instance.customer_type = 1 if instance.customer_type else 0
 
+        if commit:
+            instance.save()
+        return instance
 
 class NewInstitution(ModelForm):
 	class Meta:
@@ -208,3 +209,6 @@ class UpdateInstitutionForm(ModelForm):
 		if commit:
 			inst.save()
 		return inst
+
+class DateFilterForm(forms.Form):
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))

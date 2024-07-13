@@ -3,18 +3,32 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from collections import defaultdict
+from django.utils import timezone
 import time
+import win32com.client
+import pythoncom
+import os
+from reportlab.lib import colors, pagesizes
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+import pytz
+import logging
+import pandas as pd
+from io import BytesIO
+from openpyxl import load_workbook
 from django.conf import settings
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.views.generic.edit import FormView, CreateView
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse, path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from .forms import UpdateInstitutionForm, NewUserForm, NewAmbulanceForm, EqupmentInAmbulanceForm, NewCrewForm
-from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequestForm
+from .forms import UpdateUserForm, NewCustomerForm, NewInstitution, CustomerRequestForm, DateFilterForm
 from .models import BUser, Ambulance, EqInAmbulance, AmbulanceCrew, Institution, Customer, CustomerRide, CustomerRequest
 from Bubblance.mixins import AjaxFormMixin, FormErrors, RedrectParams
 import requests
@@ -34,7 +48,7 @@ def register_request(request):
 		if form.is_valid():
 			user = form.save()
 			messages.success(request, "user added successfuly." )
-			return redirect("home")
+			return redirect("drivers")
 		messages.error(request, "Unsuccessful registration. Invalid information.")
 	return render (request=request, template_name="register.html", context={"register_form":form})
 
@@ -262,17 +276,38 @@ def institution_info(request):
 
 
 def get_travel_time(api_key, origin, destination, departure_time):
-    url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&departure_time={departure_time}&key={api_key}"
+    israel_tz = pytz.timezone('Asia/Jerusalem')
+    reference_time = datetime.now(israel_tz)
+    
+    if departure_time.tzinfo is None:
+        departure_time = israel_tz.localize(departure_time)
+    
+    if departure_time <= reference_time:
+        departure_time = reference_time + timedelta(minutes=5)
+
+    unix_time = int(departure_time.timestamp())
+    
+    url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&departure_time={unix_time}&key={api_key}"
+    
+    logging.info(f"API Request URL: {url}")
+    
     response = requests.get(url)
     data = response.json()
+    
+    logging.info(f"API Response: {data}")
+    
     if data['status'] == 'OK':
-        travel_time = data['routes'][0]['legs'][0]['duration']['value']  # duration in seconds
+        travel_time = data['routes'][0]['legs'][0]['duration']['value']
         return travel_time
     else:
-        raise Exception(f"Error fetching data from Google Maps API: {data['status']}")
+        error_message = f"Error fetching data from Google Maps API: {data['status']}"
+        if 'error_message' in data:
+            error_message += f" - {data['error_message']}"
+        logging.error(error_message)
+        raise Exception(error_message)
 
 
-def active_drivers():
+def get_active_drivers():
 	ambulances = Ambulance.objects.filter(status=1)
 	drivers = []
 	for amb in ambulances:
@@ -284,7 +319,7 @@ def active_drivers():
 	
 def get_active_rides_by_driver():
     # Get all active drivers
-    drivers = active_drivers()
+    drivers = get_active_drivers()
     
     # Initialize a dictionary to store rides by driver
     driver_rides = defaultdict(list)
@@ -303,46 +338,84 @@ def get_active_rides_by_driver():
                 'finish_time': ride.drop_of_time
             }
             driver_rides[driver].append(ride_info)
-    
+
     return driver_rides
 
 
-def get_best_drivers_for_request(request, api_key):
+def get_best_drivers_for_request(customer_request, api_key):
+    print("Looking for best drivers")
     preferred_driver = None
     best_drivers = []
 
-    if request.have_preferred_driver and request.preferred_driver:
-        preferred_driver = request.preferred_driver
-        preferred_driver_arrival_time = get_travel_time(
-            api_key,
-            preferred_driver.current_location,
-            request.pick_up_location,
-            datetime.now()
-        )
-        preferred_driver_arrival_time = datetime.now() + timedelta(seconds=preferred_driver_arrival_time)
+    if customer_request.have_preferred_driver and customer_request.preferred_driver:
+        preferred_driver = customer_request.preferred_driver
 
     active_drivers_rides = get_active_rides_by_driver()
-    
+    active_drivers = get_active_drivers()
+
     available_drivers = []
-    for driver, rides in active_drivers_rides.items():
-        last_ride = rides[-1] if rides else None
-        if not last_ride or (last_ride and last_ride['finish_time'] <= request.pick_up_time):
+    for driver in active_drivers:
+        rides = active_drivers_rides.get(driver, [])
+        can_fit_ride = True
+        driver_arrival_time = None
+
+        start_location = driver.current_location or "hasharon hospital"
+        
+        if not rides:
             travel_time = get_travel_time(
                 api_key,
-                last_ride['destination'] if last_ride else driver.current_location,
-                request.pick_up_location,
-                request.pick_up_time
+                start_location,
+                customer_request.pick_up_location,
+                customer_request.pick_up_time
             )
-            available_drivers.append((driver, travel_time))
+            driver_arrival_time = customer_request.pick_up_time + timedelta(seconds=travel_time)
+        else:
+            for i, ride in enumerate(rides):
+                if i == 0:
+                    travel_time = get_travel_time(
+                        api_key,
+                        start_location,
+                        customer_request.pick_up_location,
+                        customer_request.pick_up_time
+                    )
+                    new_ride_finish = customer_request.pick_up_time + timedelta(seconds=travel_time)
+                    if new_ride_finish > ride['start_time']:
+                        can_fit_ride = False
+                        break
+                    driver_arrival_time = customer_request.pick_up_time + timedelta(seconds=travel_time)
+                else:
+                    prev_ride = rides[i-1]
+                    travel_time = get_travel_time(
+                        api_key,
+                        prev_ride['destination'],
+                        customer_request.pick_up_location,
+                        prev_ride['finish_time']
+                    )
+                    new_ride_finish = prev_ride['finish_time'] + timedelta(seconds=travel_time)
+                    if new_ride_finish > ride['start_time']:
+                        can_fit_ride = False
+                        break
+                    driver_arrival_time = prev_ride['finish_time'] + timedelta(seconds=travel_time)
+
+        if can_fit_ride:
+            available_drivers.append((driver, driver_arrival_time))
 
     available_drivers.sort(key=lambda x: x[1])
 
     if preferred_driver:
-        best_drivers = [(preferred_driver, preferred_driver_arrival_time)] + available_drivers[:2]
+        preferred_driver_arrival_time = get_travel_time(
+            api_key,
+            preferred_driver.current_location,
+            customer_request.pick_up_location,
+            customer_request.pick_up_time
+        )
+        preferred_driver_arrival_time = customer_request.pick_up_time + timedelta(seconds=preferred_driver_arrival_time)
+        best_drivers = [(preferred_driver, preferred_driver_arrival_time)] + available_drivers
     else:
-        best_drivers = available_drivers[:2]
+        best_drivers = available_drivers
 
     return best_drivers
+
 
 def plan_a_ride(request):
     if request.method == 'POST':
@@ -354,8 +427,12 @@ def plan_a_ride(request):
             new_customer_request = c_r_form.save(commit=False)
             new_customer_request.customer_id = new_customer
             new_customer_request.save()
-            
+            print(f"Redirecting to pick_a_driver with request_id: {new_customer_request.id}")
             return redirect('pick_a_driver', request_id=new_customer_request.id)
+        else:
+            print("Form is not valid")
+            print(c_form.errors)
+            print(c_r_form.errors)
     else:
         c_form = NewCustomerForm()
         c_r_form = CustomerRequestForm()
@@ -382,7 +459,7 @@ def complete_ride(request, request_id, driver_id):
     ambulance = crew.ambulance_id
     
     pick_up_time = customer_request.pick_up_time
-    travel_time = get_travel_time(settings.GOO, customer_request.pick_up_location, customer_request.drop_of_location, pick_up_time)
+    travel_time = get_travel_time(settings.GOOGLE_API_KEY, customer_request.pick_up_location, customer_request.drop_of_location, pick_up_time)
     drop_of_time = pick_up_time + timedelta(seconds=travel_time)
     
     CustomerRide.objects.create(
@@ -399,3 +476,93 @@ def complete_ride(request, request_id, driver_id):
     )
     
     return redirect('home')
+
+
+
+def rides(request):
+    ride_type = request.GET.get('type', 'current')
+    filter_date = request.GET.get('date')
+
+    form = DateFilterForm(initial={'date': filter_date or datetime.now().date()})
+
+    if filter_date:
+        filter_date = datetime.strptime(filter_date, '%Y-%m-%d').date()
+    else:
+        filter_date = datetime.now().date()
+
+    if ride_type == 'current':
+        rides = CustomerRide.objects.filter(status=3, pick_up_time__date=filter_date)
+        columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
+    elif ride_type == 'scheduled':
+        rides = CustomerRide.objects.filter(status=1, pick_up_time__date=filter_date)
+        columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Pick Up Location']
+    else:  # completed
+        rides = CustomerRide.objects.filter(status=2, pick_up_time__date=filter_date)
+        columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
+    
+    context = {
+        'rides': rides,
+        'columns': columns,
+        'ride_type': ride_type,
+        'filter_date': filter_date,
+        'form': form,
+    }
+    return render(request, 'rides.html', context)
+
+
+def generate_report(request):
+    if request.method == 'POST':
+        report_type = request.POST.get('report_type')
+        from_date = request.POST.get('from_date')
+        to_date = request.POST.get('to_date')
+        export_format = request.POST.get('export_format')
+        today = date.today().strftime("%d-%m-%Y")
+        filename = f"ride report {today}.xlsx"
+
+        # Query rides based on report type and date range
+        rides = CustomerRide.objects.filter(pick_up_time__range=[from_date, to_date])
+        if report_type == 'private':
+            rides = rides.filter(customer_id__customer_type='private')
+        elif report_type == 'business':
+            rides = rides.filter(customer_id__customer_type='business')
+        # Load the template
+        template_path = os.path.join(settings.BASE_DIR, 'BubblanceApp/static/report_template.xlsx')
+        workbook = load_workbook(template_path)
+        sheet = workbook.active
+        for index, ride in enumerate(rides, start=2):
+            sheet.cell(row=index, column=1, value=ride.pick_up_time.date())
+            sheet.cell(row=index, column=2, value=ride.customer_id.institution_id.in_institution.institution_name if ride.customer_id.institution_id and ride.customer_id.institution_id.in_institution else '')
+            sheet.cell(row=index, column=3, value=ride.customer_id.institution_id.institution_name if ride.customer_id.institution_id else '')
+            sheet.cell(row=index, column=4, value=ride.customer_id.patient_name)
+            sheet.cell(row=index, column=5, value=ride.pick_up_location)
+            sheet.cell(row=index, column=6, value=ride.drop_of_location)
+        temp_excel_path = os.path.join(settings.TEMP_DIR, f"temp_report_{today}.xlsx")
+        workbook.save(temp_excel_path)
+
+        if export_format == 'excel':
+            with open(temp_excel_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        elif export_format == 'pdf':
+            pythoncom.CoInitialize()
+            # Convert Excel to PDF
+            excel = win32com.client.Dispatch("Excel.Application")
+            wb = excel.Workbooks.Open(temp_excel_path)
+            temp_pdf_path = os.path.join(settings.TEMP_DIR, f"temp_report_{today}.pdf")
+            wb.SaveAs(temp_pdf_path, FileFormat=57)  # 57 is the code for PDF
+            wb.Close()
+            excel.Quit()
+            pythoncom.CoUninitialize()
+   
+            with open(temp_pdf_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{filename.replace(".xlsx", ".pdf")}"'
+
+        # Clean up temporary files
+        os.remove(temp_excel_path)
+        if export_format == 'pdf':
+            os.remove(temp_pdf_path)
+
+        return response
+
+    return render(request, 'generate_report.html')

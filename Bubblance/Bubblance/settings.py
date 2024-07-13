@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import tempfile
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,7 +44,7 @@ INSTALLED_APPS = [
     'formset',
     'bootstrap_datepicker_plus',
     'django_toggle_switch_widget',
-
+    "debug_toolbar",
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -56,6 +57,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+
 ]
 
 ROOT_URLCONF = 'Bubblance.urls'
@@ -141,7 +144,7 @@ BOOTSTRAP_DATEPICKER_PLUS = {
     }
 }
 
-GOOGLE_API_KEY = "add from notepad"
+GOOGLE_API_KEY = ""
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -153,3 +156,11 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "logout"
 
 BASE_COUNTRY = "ISR"
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+TEMP_DIR = tempfile.gettempdir()
+
+
+

@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from BubblanceApp import views
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 
 urlpatterns = [
@@ -45,8 +46,10 @@ urlpatterns = [
     path('plan_a_ride/', views.plan_a_ride, name='plan_a_ride'),
     path('pick_a_driver/<int:request_id>/', views.pick_a_driver, name='pick_a_driver'),
     path('complete_ride/<int:request_id>/<int:driver_id>/', views.complete_ride, name='complete_ride'),
-
-]
+    path('rides/', views.rides, name='rides'),
+    path('generate_report/', views.generate_report, name='generate_report'),
+    
+] + debug_toolbar_urls()
 
 
 if settings.DEBUG:

@@ -1,0 +1,90 @@
+{% extends 'header.html' %}
+{% load bootstrap4 %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs .nav-link {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    .table td, .table th {
+        padding: 0.5rem;
+    }
+    @media (min-width: 768px) {
+        .nav-tabs .nav-link {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+        .table-responsive {
+            font-size: 1rem;
+        }
+        .table td, .table th {
+            padding: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-2">
+    <h1 class="h4 mb-2">Ride List</h1>
+
+    <ul class="nav nav-tabs mb-2 d-flex">
+        <li class="nav-item flex-grow-1">
+            <a class="nav-link text-center {% if ride_type == 'current' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=current">Current</a>
+        </li>
+        <li class="nav-item flex-grow-1">
+            <a class="nav-link text-center {% if ride_type == 'scheduled' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=scheduled">Scheduled</a>
+        </li>
+        <li class="nav-item flex-grow-1">
+            <a class="nav-link text-center {% if ride_type == 'completed' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=completed">Completed</a>
+        </li>
+    </ul>
+
+    <form method="get" id="dateForm" class="form-inline mb-2">
+        <input type="hidden" name="type" value="{{ ride_type }}">
+        {% bootstrap_field form.date show_label=False field_class="date-picker" %}
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    {% for column in columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for ride in rides %}
+                    <tr>
+                        {% if ride_type == 'current' or ride_type == 'completed' %}
+                            <td>{{ ride.driver_id.firstname }} {{ ride.driver_id.lastname }}</td>
+                            <td>{{ ride.customer_id.patient_name }}</td>
+                            <td>{{ ride.customer_req.pick_up_time }}</td>
+                            <td>{{ ride.pick_up_time }}</td>
+                        {% elif ride_type == 'scheduled' %}
+                            <td>{{ ride.driver_id.firstname }} {{ ride.driver_id.lastname }}</td>
+                            <td>{{ ride.customer_id.patient_name }}</td>
+                            <td>{{ ride.pick_up_time }}</td>
+                            <td>{{ ride.pick_up_location }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var datePicker = document.querySelector('.date-picker input');
+        datePicker.addEventListener('change', function() {
+            document.getElementById('dateForm').submit();
+        });
+    });
+</script>
+{% endblock %}

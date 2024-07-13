@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 # Create your models here.
@@ -11,6 +11,7 @@ BOOL_CHOICES = ((True, 'Yes'), (False, 'No'))
 class Status(models.IntegerChoices):
     active = 1
     deactive = 2
+    ongoing = 3
 
 
 class BUser(User):
@@ -25,6 +26,7 @@ class BUser(User):
     usertype = models.IntegerField(choices=UserType.choices)
     rememberme = models.BooleanField(default=False)
     status = models.IntegerField(choices=Status.choices, default=1)
+    current_location = models.CharField(max_length=200, default='Kakal St 7, Petah Tikva')
     # image = models.ImageField(default=None)
 
 
