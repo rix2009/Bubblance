@@ -48,7 +48,11 @@ urlpatterns = [
     path('complete_ride/<int:request_id>/<int:driver_id>/', views.complete_ride, name='complete_ride'),
     path('rides/', views.rides, name='rides'),
     path('generate_report/', views.generate_report, name='generate_report'),
-    
+    path('driver_home/', views.driver_home, name='driver_home'),
+    path('ride_details/<int:ride_id>/', views.ride_details, name='ride_details'),
+    path('ride/<int:ride_id>/start/', views.start_ride, name='start_ride'),
+    path('ride/<int:ride_id>/finish/', views.finish_ride, name='finish_ride'),
+
 ] + debug_toolbar_urls()
 
 

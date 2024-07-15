@@ -566,3 +566,58 @@ def generate_report(request):
         return response
 
     return render(request, 'generate_report.html')
+
+
+def driver_home(request):
+    if request.session.pop('navigation_initiated', False):
+        # Clear the session variable and redirect to driver home
+        return redirect(reverse('driver_home'))
+    driver = request.user.buser
+    page_type = request.GET.get('type', 'todo')
+    selected_date = request.GET.get('date')
+
+    if selected_date:
+        selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+    else:
+        selected_date = datetime.now().date()
+
+    ongoing_ride = CustomerRide.objects.filter(driver_id=driver, status=3).first()
+
+    if page_type == 'todo':
+        active_rides = CustomerRide.objects.filter(driver_id=driver, status=1, pick_up_time__date=selected_date)
+    else:
+        finished_rides = CustomerRide.objects.filter(driver_id=driver, status=2, pick_up_time__date=selected_date)
+
+    context = {
+        'ongoing_ride': ongoing_ride,
+        'rides': active_rides if page_type == 'todo' else finished_rides,
+        'page_type': page_type,
+        'selected_date': selected_date
+    }
+    return render(request, 'driver_home.html', context)
+
+
+def ride_details(request, ride_id):
+    ride = get_object_or_404(CustomerRide, cust_ride_id=ride_id)
+    context = {
+        'ride': ride,
+    }
+    return render(request, 'ride_details.html', context)
+
+
+def start_ride(request, ride_id):
+    ride = get_object_or_404(CustomerRide, cust_ride_id=ride_id)
+    ride.status = 3  # Set status to ongoing
+    ride.save()
+    
+    request.session['navigation_initiated'] = True
+    
+    navigation_url = f"https://www.google.com/maps/dir/?api=1&destination={ride.pick_up_location}"
+    return HttpResponseRedirect(navigation_url)
+
+
+def finish_ride(request, ride_id):
+    ride = get_object_or_404(CustomerRide, cust_ride_id=ride_id)
+    ride.status = 2  # Set status to deactive
+    ride.save()
+    return redirect(reverse('driver_home'))

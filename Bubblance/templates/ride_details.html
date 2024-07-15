@@ -1,0 +1,48 @@
+{% extends 'header.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ ride.customer_id.patient_name }}</h1>
+    
+    <h2>Pickup Time</h2>
+    <p>{{ ride.pick_up_time }}</p>
+    
+    <h2>Special Info</h2>
+    <ul>
+        {% if ride.customer_req.need_oxygen %}
+            <li>Needs Oxygen</li>
+        {% endif %}
+        {% if ride.customer_req.need_stretcher %}
+            <li>Needs Stretcher</li>
+        {% endif %}
+        {% if ride.customer_req.need_wheel_chair %}
+            <li>Needs Wheelchair</li>
+        {% endif %}
+    </ul>
+    
+    <h2>Pickup Address</h2>
+    <p>{{ ride.pick_up_location }}</p>
+    {% if ride.customer_req.pickup_institution %}
+        <p>Institution: {{ ride.customer_req.pickup_institution.institution_name }}</p>
+    {% endif %}
+    <p>Floor: {{ ride.customer_req.num_of_floors }}</p>
+    <p>Elevator: {% if ride.customer_req.elvator_in_home %}Yes{% else %}No{% endif %}</p>
+
+    <a href="{% url 'start_ride' ride_id=ride.cust_ride_id %}" class="btn btn-primary mb-3">Start Ride and Navigate to Pickup</a>    
+    <h2>Drop-off Address</h2>
+    <p>{{ ride.drop_of_location }}</p>
+    {% if ride.customer_req.dropoff_institution %}
+        <p>Institution: {{ ride.customer_req.dropoff_institution.institution_name }}</p>
+    {% endif %}
+    
+    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ride.drop_of_location|urlencode }}" class="btn btn-primary">Navigate to Drop-off</a>
+    <br>
+    {% if ride.status == 3 %}
+
+    <a href="{% url 'finish_ride' ride_id=ride.cust_ride_id %}" class="btn btn-danger mt-3">Finish Ride</a>
+    {% endif %}
+
+
+
+</div>
+{% endblock %}

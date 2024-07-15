@@ -1,0 +1,71 @@
+{% extends 'header.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Driver Home</h1>
+
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link {% if page_type == 'todo' %}active bg-secondary text-white{% else %}bg-white text-dark{% endif %}" href="?type=todo">To Do</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page_type == 'finished' %}active bg-secondary text-white{% else %}bg-white text-dark{% endif %}" href="?type=finished">Finished</a>
+        </li>
+    </ul>
+
+    <form method="get" class="mb-4">
+        <input type="hidden" name="type" value="{{ page_type }}">
+        <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+    </form>
+
+        {% if page_type == 'todo' %}
+        {% if ongoing_ride %}
+            <h2>Ongoing Ride</h2>
+            <div class="card mb-3 bg-info ride-card" data-ride-id="{{ ongoing_ride.cust_ride_id }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ongoing_ride.customer_id.patient_name }}</h5>
+                    <p class="card-text">Pickup Time: {{ ongoing_ride.pick_up_time }}</p>
+                    <p class="card-text">Pickup Location: {{ ongoing_ride.pick_up_location }}</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <h2>Active Rides</h2>
+        {% for ride in rides %}
+            <div class="card mb-3 ride-card" data-ride-id="{{ ride.cust_ride_id }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ride.customer_id.patient_name }}</h5>
+                    <p class="card-text">Pickup Time: {{ ride.pick_up_time }}</p>
+                    <p class="card-text">Pickup Location: {{ ride.pick_up_location }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Request Pickup Time</th>
+                    <th>Finished Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ride in rides %}
+                    <tr>
+                        <td>{{ ride.customer_id.patient_name }}</td>
+                        <td>{{ ride.customer_req.pick_up_time }}</td>
+                        <td>{{ ride.drop_of_time }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+<script>
+    document.querySelectorAll('.ride-card').forEach(card => {
+        card.addEventListener('click', function() {
+            window.location.href = `/ride_details/${this.dataset.rideId}/`;
+        });
+    });
+</script>
+{% endblock %}
