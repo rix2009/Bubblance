@@ -35,20 +35,22 @@
 
     <ul class="nav nav-tabs mb-2 d-flex">
         <li class="nav-item flex-grow-1">
-            <a class="nav-link text-center {% if ride_type == 'current' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=current">Current</a>
+            <a class="nav-link text-center {% if ride_type == 'current' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=current&date={{ filter_date|date:'Y-m-d' }}">Current</a>
         </li>
         <li class="nav-item flex-grow-1">
-            <a class="nav-link text-center {% if ride_type == 'scheduled' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=scheduled">Scheduled</a>
+            <a class="nav-link text-center {% if ride_type == 'scheduled' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=scheduled&date={{ filter_date|date:'Y-m-d' }}">Scheduled</a>
         </li>
         <li class="nav-item flex-grow-1">
-            <a class="nav-link text-center {% if ride_type == 'completed' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=completed">Completed</a>
+            <a class="nav-link text-center {% if ride_type == 'completed' %}active bg-secondary text-white{% else %}text-dark{% endif %}" href="?type=completed&date={{ filter_date|date:'Y-m-d' }}">Completed</a>
         </li>
     </ul>
 
+    {% if ride_type != 'current' %}
     <form method="get" id="dateForm" class="form-inline mb-2">
         <input type="hidden" name="type" value="{{ ride_type }}">
         {% bootstrap_field form.date show_label=False field_class="date-picker" %}
     </form>
+    {% endif %}
 
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-sm">
@@ -72,6 +74,11 @@
                             <td>{{ ride.customer_id.patient_name }}</td>
                             <td>{{ ride.pick_up_time }}</td>
                             <td>{{ ride.pick_up_location }}</td>
+                        {% endif %}
+                        {% if ride_type == 'current' %}
+                        <td>
+                            <a href="{% url 'ride_details' ride.cust_ride_id %}" class="btn btn-primary btn-sm">View</a>
+                        </td>
                         {% endif %}
                     </tr>
                 {% endfor %}

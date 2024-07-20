@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from datetime import datetime, timezone
+import uuid
+
 
 
 # Create your models here.
@@ -114,3 +116,7 @@ class CustomerRide(models.Model):
     number_of_stuff_needed = models.PositiveIntegerField()
     status = models.IntegerField(choices=Status.choices, default=1)
     charge_number = models.CharField(max_length=5, blank=True, null=True)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    def generate_token(self):
+        return uuid.uuid4().hex

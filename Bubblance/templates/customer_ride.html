@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Ride Information</title>
+    <style>
+        /* Add some basic styling here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer Ride Information</h1>
+    <div>
+        <p>Driver: {{ ride.driver_id }}</p>
+        <p>Patient Name: {{ ride.customer_id.patient_name }}</p>
+        <p>Pick Up Location: {{ ride.pick_up_location }}</p>
+        <p>Drop Off Location: {{ ride.drop_of_location }}</p>
+        <p>Pick Up Time: {{ ride.pick_up_time }}</p>
+        <p>Drop Off Time: {{ ride.drop_of_time }}</p>
+        <p>Status: {{ ride.get_status_display }}</p>
+    </div>
+</body>
+</html>

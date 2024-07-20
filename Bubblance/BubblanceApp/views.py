@@ -491,14 +491,17 @@ def rides(request):
         filter_date = datetime.now().date()
 
     if ride_type == 'current':
-        rides = CustomerRide.objects.filter(status=3, pick_up_time__date=filter_date)
-        columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
+        rides = CustomerRide.objects.filter(status=3)
     elif ride_type == 'scheduled':
         rides = CustomerRide.objects.filter(status=1, pick_up_time__date=filter_date)
-        columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Pick Up Location']
     else:  # completed
         rides = CustomerRide.objects.filter(status=2, pick_up_time__date=filter_date)
-        columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
+    
+    columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
+    if ride_type == 'current':
+        columns.append('Actions')
+    elif ride_type == 'scheduled':
+        columns[3] = 'Pick Up Location'
     
     context = {
         'rides': rides,
@@ -508,6 +511,7 @@ def rides(request):
         'form': form,
     }
     return render(request, 'rides.html', context)
+
 
 
 def generate_report(request):
@@ -599,8 +603,19 @@ def driver_home(request):
 
 def ride_details(request, ride_id):
     ride = get_object_or_404(CustomerRide, cust_ride_id=ride_id)
+    is_manager = False
+    if request.user.buser.usertype == 2:
+        is_manager = True 
+
+    customer_link = None
+    if is_manager:
+        customer_link = request.build_absolute_uri(reverse('customer_ride_page'))
+        customer_link += f'?token={ride.token}'  # You'll need to implement this method
+
     context = {
         'ride': ride,
+        'is_manager': is_manager,
+        'customer_link': customer_link,
     }
     return render(request, 'ride_details.html', context)
 
@@ -621,3 +636,13 @@ def finish_ride(request, ride_id):
     ride.status = 2  # Set status to deactive
     ride.save()
     return redirect(reverse('driver_home'))
+
+
+def customer_ride_page(request):
+    token = request.GET.get('token')
+    ride = get_object_or_404(CustomerRide, token=token)
+    
+    context = {
+        'ride': ride,
+    }
+    return render(request, 'customer_ride.html', context)
