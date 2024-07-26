@@ -4,32 +4,34 @@
 {% block content %}      
 
 {% load crispy_forms_tags %}
-
-<!--ambulance--> 
-<div class="container py-5">
-  {% for buser in users %}
-  <form method="POST" action="{% url 'driver_info' %}">
-    {% csrf_token %}
-    <input type="hidden" name="buser" value="{{ buser}}" > 
-    <input type="hidden" name="save_form" value="False" >
-    <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
-      <table style="color: #353459; font-size: x-large; text-align: center;">
-        <tr>
-          <td style="width: 20%;">
-            <img class="navbar-logo" src="{% static 'drivers.png' %}" width="50px" height="50px">
-          </td>
-          <td style="width: 70%;">
-            <b>{{buser.firstname}} {{buser.lastname}}</b>
-          </td>
-          <td style="width: 10%;">
-            <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="50px" height="50px" style="margin-left: 10%;">
-          </td>
-        </tr>
-      </table>
-    </button>
-  </form>
-  <br>
-  {% endfor %}
+<!-- search bar -->
+<input type="text" id="searchInput" class="form-control" placeholder="Search drivers..." value="{{ request.GET.search }}">
+<br>
+<!--drivers--> 
+<div id="driverList">
+    {% for buser in users %}
+    <form method="POST" action="{% url 'driver_info' %}">
+        {% csrf_token %}
+        <input type="hidden" name="buser" value="{{ buser.username }}"> 
+        <input type="hidden" name="save_form" value="False">
+        <button class="btn btn-primary driver-item" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;"
+        data-driver-info="{{ buser.username }} {{ buser.email }} {{ buser.firstname }} {{ buser.lastname }} {{ buser.Israeliid }}">            <table style="color: #353459; font-size: x-large; text-align: center;">
+                <tr>
+                    <td style="width: 20%;">
+                        <img class="navbar-logo" src="{% static 'drivers.png' %}" width="50px" height="50px">
+                    </td>
+                    <td style="width: 70%;">
+                        <b>{{buser.firstname}} {{buser.lastname}}</b>
+                    </td>
+                    <td style="width: 10%;">
+                        <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="50px" height="50px" style="margin-left: 10%;">
+                    </td>
+                </tr>
+            </table>
+        </button>
+    </form>
+    <br>
+    {% endfor %}
 </div>
 
 <div class="container py-5" align="center">
@@ -38,5 +40,20 @@
   {% endif %}
   <a class="btn btn-primary" href="{% url 'register' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add a User</a>
 </div>
+<script>
+  document.getElementById('searchInput').addEventListener('input', function() {
+      var searchQuery = this.value.toLowerCase();
+      var driverItems = document.getElementsByClassName('driver-item');
+      
+      for (var i = 0; i < driverItems.length; i++) {
+          var driverInfo = driverItems[i].getAttribute('data-driver-info').toLowerCase();
+          if (driverInfo.includes(searchQuery)) {
+              driverItems[i].style.display = "";
+          } else {
+              driverItems[i].style.display = "none";
+          }
+      }
+  });
+  </script>
 
 {% endblock %}

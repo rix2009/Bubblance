@@ -30,6 +30,9 @@ class BUser(User):
     status = models.IntegerField(choices=Status.choices, default=1)
     current_location = models.CharField(max_length=200, default='Kakal St 7, Petah Tikva')
     # image = models.ImageField(default=None)
+    
+    def __str__(self):
+        return f'{self.firstname} {self.lastname}'
 
 
 class Ambulance(models.Model):

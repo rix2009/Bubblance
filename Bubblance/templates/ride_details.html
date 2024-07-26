@@ -27,15 +27,16 @@
     {% endif %}
     <p>Floor: {{ ride.customer_req.num_of_floors }}</p>
     <p>Elevator: {% if ride.customer_req.elvator_in_home %}Yes{% else %}No{% endif %}</p>
-
-    <a href="{% url 'start_ride' ride_id=ride.cust_ride_id %}" class="btn btn-primary mb-3">Start Ride and Navigate to Pickup</a>    
+    <a href="{% url 'start_ride' ride_id=ride.cust_ride_id %}" class="btn btn-primary mb-3 {% if ride.status != 1 %}disabled{% endif %}" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">Start Ride</a>
+    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ride.pick_up_location|urlencode }}" class="btn btn-secondary mb-3" target="_blank" rel="noopener noreferrer" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">Navigate to Pickup</a>
+    <!-- <a href="{% url 'start_ride' ride_id=ride.cust_ride_id %}" class="btn btn-primary mb-3" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">Start Ride and Navigate to Pickup</a>     -->
     <h2>Drop-off Address</h2>
     <p>{{ ride.drop_of_location }}</p>
     {% if ride.customer_req.dropoff_institution %}
         <p>Institution: {{ ride.customer_req.dropoff_institution.institution_name }}</p>
     {% endif %}
     
-    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ride.drop_of_location|urlencode }}" class="btn btn-primary">Navigate to Drop-off</a>
+    <a href="https://www.google.com/maps/dir/?api=1&destination={{ ride.drop_of_location|urlencode }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">Navigate to Drop-off</a>
     <br>
     {% if ride.status == 3 %}
 
@@ -46,7 +47,7 @@
 <div class="mt-3">
     <h4>Customer Link</h4>
     <input type="text" value="{{ customer_link }}" id="customerLink" readonly class="form-control">
-    <button onclick="copyLink()" class="btn btn-primary mt-2">Copy Customer Link</button>
+    <button onclick="copyLink()" class="btn btn-primary mt-2" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">Copy Customer Link</button>
 </div>
 
 <script>

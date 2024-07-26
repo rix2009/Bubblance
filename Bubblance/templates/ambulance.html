@@ -4,6 +4,8 @@
 {% block content %}      
 
 {% load crispy_forms_tags %}
+<!-- search bar -->
+<input type="text" id="searchInput" class="form-control mb-3" placeholder="Search ambulances...">
 
 <!--ambulance--> 
 <div class="container py-5">
@@ -11,8 +13,8 @@
   <form method="POST" action="{% url 'ambulance_info' %}">
     {% csrf_token %}
     <input type="hidden" name="amb" value="{{ amb.ambulance_id }}" > 
-    <button class="btn btn-primary" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
-      <table style="color: #353459; font-size: x-large; text-align: center;">
+    <button class="btn btn-primary ambulance-item" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;"
+    data-ambulance-info="{{ amb.ambulance_id }} {{ amb.ambulance_number }} {{ amb.amb_availablity }}">      <table style="color: #353459; font-size: x-large; text-align: center;">
         <tr>
           <td style="width: 20%;">
             <img class="navbar-logo" src="{% static 'ambulances.png' %}" width="50px" height="50px">
@@ -37,5 +39,19 @@
   {% endif %}
   <a class="btn btn-primary" href="{% url 'create_ambulance' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add an Ambulance</a>
 </div>
-
+<script>
+  document.getElementById('searchInput').addEventListener('input', function() {
+      var searchQuery = this.value.toLowerCase();
+      var ambulanceItems = document.getElementsByClassName('ambulance-item');
+      
+      for (var i = 0; i < ambulanceItems.length; i++) {
+          var ambulanceInfo = ambulanceItems[i].getAttribute('data-ambulance-info').toLowerCase();
+          if (ambulanceInfo.includes(searchQuery)) {
+              ambulanceItems[i].style.display = "";
+          } else {
+              ambulanceItems[i].style.display = "none";
+          }
+      }
+  });
+  </script>
 {% endblock %}

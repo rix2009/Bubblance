@@ -74,10 +74,13 @@
                             <td>{{ ride.customer_id.patient_name }}</td>
                             <td>{{ ride.pick_up_time }}</td>
                             <td>{{ ride.pick_up_location }}</td>
+                            <td align="center">
+                                <a href="{% url 'ride_details' ride.cust_ride_id %}" class="btn btn-primary btn-sm" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">View</a>
+                            </td>
                         {% endif %}
                         {% if ride_type == 'current' %}
-                        <td>
-                            <a href="{% url 'ride_details' ride.cust_ride_id %}" class="btn btn-primary btn-sm">View</a>
+                        <td align="center">
+                            <a href="{% url 'ride_details' ride.cust_ride_id %}" class="btn btn-primary btn-sm" style="background-color: #353459; color: #d4e3fc; border:#353459 1px solid;">View</a>
                         </td>
                         {% endif %}
                     </tr>

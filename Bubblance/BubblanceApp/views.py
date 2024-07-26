@@ -8,6 +8,7 @@ import time
 import win32com.client
 import pythoncom
 import os
+from django.db.models import Q
 from reportlab.lib import colors, pagesizes
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
@@ -54,25 +55,26 @@ def register_request(request):
 
 
 def login_request(request):
-	if request.method == "POST":
-		form = AuthenticationForm(request, data=request.POST)
-		if form.is_valid():
-			username = form.cleaned_data.get('username')
-			password = form.cleaned_data.get('password')
-			user = authenticate(username=username, password=password)
-			if user is not None:
-				if BUser.objects.get(username=user).status == 1:
-					login(request, user)
-					messages.info(request, f"You are now logged in as {username}.")
-					return redirect(reverse("home"), kwargs={"user": user})
-				else:
-					messages.error(request,"The user is not active.")
-			else:
-				messages.error(request,"Invalid username or password.")
-		else:
-			messages.error(request,"Invalid username or password.")
-	form = AuthenticationForm()
-	return render(request=request, template_name="login.html", context={"login_form":form})
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                buser = BUser.objects.get(username=user)
+                if buser.status == 1:
+                    login(request, user)
+                    messages.info(request, f"You are now logged in as {buser.firstname} {buser.lastname}.")
+                    return redirect(reverse("home"), kwargs={"user": user})
+                else:
+                    messages.error(request,"The user is not active.")
+            else:
+                messages.error(request,"Invalid username or password.")
+    else:
+        messages.error(request,"Invalid username or password.")
+        form = AuthenticationForm()
+    return render(request=request, template_name="login.html", context={"login_form":form})
 
 
 def logout_request(request):
@@ -121,35 +123,34 @@ def create_equipment(request):
 
 
 def drivers(request):
-	context = {}
-	context["users"] = BUser.objects.all()
-	context["no_user"] = False		
-	if context["users"].count() == 0:
-		context["no_user"] = True		
-	return render (request=request, template_name="drivers.html", context = context)
+    users = BUser.objects.all()
+    context = {
+        "users": users,
+        "no_user": users.count() == 0
+    }
+    return render(request=request, template_name="drivers.html", context=context)
 
 
 def ambulance_info(request):
-	context = {}
-	if request.method == "POST":
-		amb = Ambulance.objects.get(ambulance_id = request.POST.get('amb'))
-		eq_in_amb = []
-		for e in EqInAmbulance.objects.filter(am_id = amb):
-			eq_in_amb.append(e)
-		no_driver = True
-		for d in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id, start_time__lte = datetime.now()):
-			if d.end_time == None :
-				context["driver"] = BUser.objects.get(username = d.driver_id)
-				no_driver = False
-		messages.error(request,"The ambulance is not in use")
-		context["amb"] = amb
-		context["equipment"] = eq_in_amb
-		if no_driver:
-			context["busers"] = BUser.objects.all()
-		context["no_driver"] = no_driver
-		context["new_crew_form"] = NewCrewForm
-		return render (request, "ambulance_info.html",context)
-	return redirect (reverse("ambulance"))
+    context = {}
+    if request.method == "POST":
+        amb = Ambulance.objects.get(ambulance_id = request.POST.get('amb'))
+        context["amb"] = amb
+        eq_in_amb = []
+        for e in EqInAmbulance.objects.filter(am_id = amb):
+            eq_in_amb.append(e)
+        context["equipment"] = eq_in_amb
+        no_driver = True
+        for d in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id, start_time__lte = datetime.now()):
+            if d.end_time == None :
+                context["driver"] = BUser.objects.get(username = d.driver_id)
+                no_driver = False
+        if no_driver:
+            context["busers"] = BUser.objects.all()
+        context["no_driver"] = no_driver
+        context["new_crew_form"] = NewCrewForm
+        return render (request, "ambulance_info.html",context)
+    return redirect (reverse("ambulance"))
 
 
 def disable_ambulance(request):
@@ -189,19 +190,20 @@ def end_crew_time(request):
 
 
 def driver_info(request):
-	user = request.POST.get("buser") or request.GET.get("buser")
-	buser = get_object_or_404(BUser, username=user)
+    user = request.POST.get("buser")
+    buser = get_object_or_404(BUser, username=user)
 
-	if request.method == 'POST' and request.POST.get("save_form") == "True":
-		form = UpdateUserForm(request.POST, instance=buser)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "user updated successfuly.")
-			return redirect("drivers")
-		messages.error(request, "Unsuccessful registration. Invalid information.")
-	else:
-		form = UpdateUserForm(instance=buser)
-	return render (request=request, template_name="driver_info.html", context={"buser":buser, "update_user_form":form, "save_form": True})
+    if request.method == 'POST' and request.POST.get("save_form") == "True":
+        form = UpdateUserForm(request.POST, instance=buser)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "User updated successfully.")
+            return redirect("drivers")
+        messages.error(request, "Unsuccessful update. Invalid information.")
+    else:
+        form = UpdateUserForm(instance=buser)
+    
+    return render(request, "driver_info.html", {"buser": buser, "update_user_form": form, "save_form": True})
 
 
 def disable_driver(request):
@@ -502,7 +504,8 @@ def rides(request):
         columns.append('Actions')
     elif ride_type == 'scheduled':
         columns[3] = 'Pick Up Location'
-    
+        columns.append('Actions')
+
     context = {
         'rides': rides,
         'columns': columns,
@@ -624,11 +627,8 @@ def start_ride(request, ride_id):
     ride = get_object_or_404(CustomerRide, cust_ride_id=ride_id)
     ride.status = 3  # Set status to ongoing
     ride.save()
-    
-    request.session['navigation_initiated'] = True
-    
-    navigation_url = f"https://www.google.com/maps/dir/?api=1&destination={ride.pick_up_location}"
-    return HttpResponseRedirect(navigation_url)
+    messages.success(request, "Ride started successfully.")
+    return redirect('ride_details', ride_id=ride_id)
 
 
 def finish_ride(request, ride_id):
@@ -646,3 +646,12 @@ def customer_ride_page(request):
         'ride': ride,
     }
     return render(request, 'customer_ride.html', context)
+
+
+def get_institution_address(request):
+    institution_id = request.GET.get('institution_id')
+    try:
+        institution = Institution.objects.get(inst_id=institution_id)
+        return JsonResponse({'address': institution.institution_adress})
+    except Institution.DoesNotExist:
+        return JsonResponse({'error': 'Institution not found'}, status=404)

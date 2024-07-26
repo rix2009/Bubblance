@@ -53,9 +53,7 @@ urlpatterns = [
     path('ride/<int:ride_id>/start/', views.start_ride, name='start_ride'),
     path('ride/<int:ride_id>/finish/', views.finish_ride, name='finish_ride'),
     path('customer-ride/', views.customer_ride_page, name='customer_ride_page'),
-
-
-
+    path('get-institution-address/', views.get_institution_address, name='get_institution_address'),
 
 
 ] + debug_toolbar_urls()

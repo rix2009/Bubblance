@@ -17,9 +17,7 @@
     {% csrf_token %}
     {{ c_form|crispy }}
     {{ c_r_form|crispy }}
-    <button class="btn btn-primary" type="submit" style="width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;">
-      Submit Request
-    </button>
+    <button class="btn btn-primary" type="submit" style="width: 50%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;">Submit Request</button>
   </form>
 </div>
 
@@ -77,6 +75,23 @@ function toggleVisibility(toggleField, targetField) {
         target.style.display = 'none';
     }
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    var pickupInstitutionToggle = document.getElementById('id_pick_from_institution');
+    var dropoffInstitutionToggle = document.getElementById('id_drop_at_institution');
+
+    pickupInstitutionToggle.addEventListener('change', function() {
+        dropoffInstitutionToggle.disabled = this.checked;
+    });
+
+    dropoffInstitutionToggle.addEventListener('change', function() {
+        pickupInstitutionToggle.disabled = this.checked;
+    });
+
+    // Initial state
+    toggleVisibility('pick_from_institution', 'pickup_institution');
+    toggleVisibility('drop_at_institution', 'dropoff_institution');
+});
 </script>
 
 {% endblock %}

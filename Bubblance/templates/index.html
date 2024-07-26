@@ -25,15 +25,22 @@
         </div>
       </nav>
 {% endif %}
+{% load crispy_forms_tags %}
+{% for message in messages %}
+<div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} message-alert" role="alert">
+    {{ message }}
+</div>
+{% endfor %} 
       {% if user.is_authenticated and user.buser.usertype == 2 %}
-          <!--main div-->    
+          <!--main div-->  
+     
           <!--under navbar-->
       <div style="margin-left: 10%; margin-top: 3%;">
         <a style="color: #353459; font-size: x-large;">Welcome, {{user.buser.firstname}}</a>
         <br><br>
         <p style="color: #353459; font-size: x-large;"><b>Always ready<br>anytime & anywhere!</b></p>
       </div>   
-      <div align="center" style="margin-top: 20%"> 
+      <div align="center" style="margin-top: 10%"> 
       <form method="link" action="{% url 'plan_a_ride' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
         <table align="center">
@@ -48,7 +55,6 @@
         </table>
       </button>
       </form>
-      <br>
       <br>
       <form method="link" action="{% url 'rides' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
@@ -65,7 +71,6 @@
       </button>
       </form>
       <br>
-      <br>
       <form method="link" action="{% url 'ambulance' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
           <table align="center">
@@ -80,7 +85,6 @@
         </table>
       </button>
       </form>
-      <br>
       <br>
       <form method="link" action="{% url 'drivers' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px; width: 60%;box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
@@ -97,6 +101,20 @@
       </button>
       </form>
       <br>
+      <form method="link" action="{% url 'institutions' %}">
+        <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
+        <table align="center">
+          <tr>
+            <td style="width: 10%;">
+              <img class="navbar-logo" src="{% static 'inst.png' %}" width="60px" height="50px">
+            </td>
+            <td style="color: #353459; font-size: large;width: 80%;">
+              Institutions
+            </td>
+          </tr>
+        </table>
+      </button>
+      </form>
       <br>
       <form method="link" action="{% url 'generate_report' %}">
         <button class="btn btn-lg" type="submit" style="background-color: #d4e3fc; border:#353459 1px solid; border-radius: 12px; width: 60%; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);">
@@ -126,9 +144,23 @@
       {% endif %}
       {% endif %}
       </div>
-      <br><br>
+      <br>
       <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
       <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
       <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var messages = document.querySelectorAll('.message-alert');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.transition = 'opacity 1s';
+                    message.style.opacity = '0';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 1000);
+                }, 3000);
+            });
+        });
+    </script>
     </body>
 </html>

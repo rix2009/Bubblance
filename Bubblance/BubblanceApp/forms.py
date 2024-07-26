@@ -30,17 +30,20 @@ class NewUserForm(UserCreationForm):
 		return user
 
 
-class UpdateUserForm(ModelForm):
-	class Meta:	
-		model = BUser
-		fields = ("email", "firstname", "lastname",
-				"phonenumber", "usertype",)
-		
-	def save(self, commit=True):
-		user = super(UpdateUserForm, self).save(commit=False)
-		if commit:
-			user.save()
-		return user
+class UpdateUserForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(), required=False)
+
+    class Meta:
+        model = BUser
+        fields = ['username', 'email', 'firstname', 'lastname', 'israeliid', 'phonenumber', 'usertype']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        editable_fields = ['username', 'email', 'firstname', 'lastname', 'phonenumber', 'usertype']
+        for field in self.fields:
+            if field not in editable_fields and field != 'password':
+                self.fields[field].widget.attrs['readonly'] = True
+
 
 
 class NewAmbulanceForm(ModelForm):
@@ -107,12 +110,14 @@ class CustomerRequestForm(ModelForm):
         self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('pick_from_institution', 'pickup_institution')"})
         self.fields['pickup_institution'].required=False
         self.fields['pickup_institution'].label = 'Choose a pick-up Institution'
+        self.fields['pickup_institution'].queryset = Institution.objects.all()
 
         self.fields['drop_at_institution'].required=False
         self.fields['drop_at_institution'].label = 'Drop-off at an Institution?'
         self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('drop_at_institution', 'dropoff_institution')"})
         self.fields['dropoff_institution'].required=False
         self.fields['dropoff_institution'].label = 'Choose a drop-off Institution'
+        self.fields['dropoff_institution'].queryset = Institution.objects.all()
 
         self.fields['return_trip'].required=False
         self.fields['return_trip'].label = 'Return trip needed?'
@@ -172,6 +177,7 @@ class NewCustomerForm(ModelForm):
             instance.save()
         return instance
 
+
 class NewInstitution(ModelForm):
 	class Meta:
 		model = Institution
@@ -209,6 +215,7 @@ class UpdateInstitutionForm(ModelForm):
 		if commit:
 			inst.save()
 		return inst
+
 
 class DateFilterForm(forms.Form):
     date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
