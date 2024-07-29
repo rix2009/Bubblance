@@ -431,10 +431,10 @@ def plan_a_ride(request):
             new_customer_request.save()
             print(f"Redirecting to pick_a_driver with request_id: {new_customer_request.id}")
             return redirect('pick_a_driver', request_id=new_customer_request.id)
-        else:
-            print("Form is not valid")
-            print(c_form.errors)
-            print(c_r_form.errors)
+        # else:
+        #     print("Form is not valid")
+        #     print(c_form.errors)
+        #     print(c_r_form.errors)
     else:
         c_form = NewCustomerForm()
         c_r_form = CustomerRequestForm()

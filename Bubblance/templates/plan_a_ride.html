@@ -3,7 +3,6 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-
 <div class="container py-5">
   <table style="width: 100%; color:#353459;">
     <tr>
@@ -60,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function initializeVisibility() {
     toggleVisibility('customer_type', 'institution_id');
-    toggleVisibility('pick_from_institution', 'pickup_institution');
+    // toggleVisibility('pick_from_institution', 'pickup_institution');
     toggleVisibility('drop_at_institution', 'dropoff_institution');
     toggleVisibility('return_trip', 'return_trip_pick_up_time');
     toggleVisibility('have_preferred_driver', 'preferred_driver');
@@ -92,6 +91,25 @@ document.addEventListener("DOMContentLoaded", function() {
     toggleVisibility('pick_from_institution', 'pickup_institution');
     toggleVisibility('drop_at_institution', 'dropoff_institution');
 });
+function toggleInstitutionPickup() {
+    var pickupToggle = document.getElementById('id_pick_from_institution');
+    var dropoffToggle = document.getElementById('id_drop_at_institution');
+    if (!pickupToggle.checked) {
+        dropoffToggle.checked = true;
+    }
+    toggleVisibility('pick_from_institution', 'pickup_institution');
+    toggleVisibility('drop_at_institution', 'dropoff_institution');
+}
+
+function toggleInstitutionDropoff() {
+    var pickupToggle = document.getElementById('id_pick_from_institution');
+    var dropoffToggle = document.getElementById('id_drop_at_institution');
+    if (!dropoffToggle.checked) {
+        pickupToggle.checked = true;
+    }
+    toggleVisibility('pick_from_institution', 'pickup_institution');
+    toggleVisibility('drop_at_institution', 'dropoff_institution');
+}
 </script>
 
 {% endblock %}

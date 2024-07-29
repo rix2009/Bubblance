@@ -106,40 +106,41 @@ class CustomerRequestForm(ModelForm):
         self.fields['customer_id'].widget = HiddenInput()
         self.fields['customer_id'].required=False
         self.fields['pick_from_institution'].required=False
+        self.fields['pick_from_institution'].initial=True
         self.fields['pick_from_institution'].label = 'Pick-up from an Institution?'
-        self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('pick_from_institution', 'pickup_institution')"})
-        self.fields['pickup_institution'].required=False
+        self.fields['pick_from_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle", attrs={'onchange': "toggleInstitutionPickup()"})
         self.fields['pickup_institution'].label = 'Choose a pick-up Institution'
         self.fields['pickup_institution'].queryset = Institution.objects.all()
 
         self.fields['drop_at_institution'].required=False
         self.fields['drop_at_institution'].label = 'Drop-off at an Institution?'
-        self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('drop_at_institution', 'dropoff_institution')"})
+        self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle", attrs={'onchange': "toggleInstitutionDropoff()"})
+        self.fields['pickup_institution'].required=False
         self.fields['dropoff_institution'].required=False
         self.fields['dropoff_institution'].label = 'Choose a drop-off Institution'
         self.fields['dropoff_institution'].queryset = Institution.objects.all()
 
         self.fields['return_trip'].required=False
         self.fields['return_trip'].label = 'Return trip needed?'
-        self.fields['return_trip'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('return_trip', 'return_trip_pick_up_time')"})
+        self.fields['return_trip'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle", attrs={'onchange': "toggleVisibility('return_trip', 'return_trip_pick_up_time')"})
         self.fields['return_trip_pick_up_time'].required=False
         self.fields['return_trip_pick_up_time'].label = 'Return trip pick-up date and time'
 
         self.fields['have_preferred_driver'].required=False
         self.fields['have_preferred_driver'].label = 'Have a favorite driver?'
-        self.fields['have_preferred_driver'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('have_preferred_driver', 'preferred_driver')"})
+        self.fields['have_preferred_driver'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle ", attrs={'onchange': "toggleVisibility('have_preferred_driver', 'preferred_driver')"})
         self.fields['preferred_driver'].required=False
         self.fields['preferred_driver'].label = 'Pick a driver'
 
         self.fields['elvator_in_home'].required=False
-        self.fields['elvator_in_home'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['elvator_in_home'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle")
         self.fields['two_stuff_needed'].required=False
-        self.fields['two_stuff_needed'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['two_stuff_needed'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle")
         self.fields['need_oxygen'].required=False
-        self.fields['need_oxygen'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
-        self.fields['need_stretcher'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['need_oxygen'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle")
+        self.fields['need_stretcher'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle")
         self.fields['need_stretcher'].required=False
-        self.fields['need_wheel_chair'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success")
+        self.fields['need_wheel_chair'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle")
         self.fields['need_wheel_chair'].required=False
 
         self.fields['pick_up_time'].widget = DateTimePickerInput()

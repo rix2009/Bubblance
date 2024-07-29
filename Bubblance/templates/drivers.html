@@ -6,7 +6,13 @@
 {% load crispy_forms_tags %}
 <!-- search bar -->
 <input type="text" id="searchInput" class="form-control" placeholder="Search drivers..." value="{{ request.GET.search }}">
-<br>
+<!-- add user -->
+<div class="container py-5" align="center">
+    {% if no_user %}
+    <h3>Sadly there are no Drivers to show</h3>
+    {% endif %}
+    <a class="btn btn-primary" href="{% url 'register' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add a User</a>
+  </div>
 <!--drivers--> 
 <div id="driverList">
     {% for buser in users %}
@@ -34,12 +40,7 @@
     {% endfor %}
 </div>
 
-<div class="container py-5" align="center">
-  {% if no_user %}
-  <h3>Sadly there are no Drivers to show</h3>
-  {% endif %}
-  <a class="btn btn-primary" href="{% url 'register' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add a User</a>
-</div>
+
 <script>
   document.getElementById('searchInput').addEventListener('input', function() {
       var searchQuery = this.value.toLowerCase();
