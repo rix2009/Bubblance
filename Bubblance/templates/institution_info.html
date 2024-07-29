@@ -28,6 +28,40 @@
 		<button class="btn btn-primary" type="submit" style="width: 80%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;width: 100%;">Update Institution</button>
 	</form>
 </div>
+<table style="width: 100%; color:#353459;">
+  <tr >
+    <td style="left: 10%;"><h4>Child Institutions</h4></td>
+    <td style="right: 10%; width: 50%;">
+      <a class="btn btn-primary" href="{% url 'add_institution' %}?parent_id={{ inst.inst_id }}&parent_address={{ inst.institution_adress|urlencode }}" style="width: 100%;background-color: #353459; border:#353459 1px solid;border-radius: 12px;">
+        Add Child Institution
+      </a>
+    </td>
+  </tr>
+</table>
+<div id="childInstitutionList">
+
+  {% for child in child_institutions %}
+  <form method="POST" action="{% url 'institution_info' %}" style="padding-top: 2%;">
+      {% csrf_token %}
+      <input type="hidden" name="inst_id" value="{{ child.inst_id }}"> 
+      <button class="btn btn-secondary institution-item" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;">
+          <table style="color: #353459; font-size:16px; text-align: center;">
+              <tr>
+                  <td style="width: 90%;">
+                      <b>{{child.institution_name}}</b>
+                  </td>
+                  <td style="width: 10%;">
+                      <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="30px" height="30px" style="margin-left: 10%;">
+                  </td>
+              </tr>
+          </table>
+      </button>
+  </form>
+  {% empty %}
+  <p>No child institutions found.</p>
+  {% endfor %}
+</div>
+</div>
 
 
 

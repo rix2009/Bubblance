@@ -110,6 +110,29 @@ function toggleInstitutionDropoff() {
     toggleVisibility('pick_from_institution', 'pickup_institution');
     toggleVisibility('drop_at_institution', 'dropoff_institution');
 }
+function updateAddress(institutionSelect, locationInput) {
+            const institutionId = institutionSelect.value;
+            if (institutionId) {
+                fetch(`/get_institution_address/${institutionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.address) {
+                            locationInput.value = data.address;
+                        }
+                    });
+            }
+        }
+document.addEventListener('DOMContentLoaded', function() {
+        const pickupInstitution = document.getElementById('id_pickup_institution');
+        const dropoffInstitution = document.getElementById('id_dropoff_institution');
+        const pickupLocation = document.getElementById('id_pick_up_location');
+        const dropoffLocation = document.getElementById('id_drop_of_location');
+    
+
+    
+        pickupInstitution.addEventListener('change', () => updateAddress(pickupInstitution, pickupLocation));
+        dropoffInstitution.addEventListener('change', () => updateAddress(dropoffInstitution, dropoffLocation));
+    });
 </script>
 
 {% endblock %}

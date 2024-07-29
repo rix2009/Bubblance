@@ -123,10 +123,17 @@ def create_equipment(request):
 
 
 def drivers(request):
-    users = BUser.objects.all()
+    show_inactive = request.GET.get('show_inactive', 'false') == 'true'
+    
+    if show_inactive:
+        users = BUser.objects.filter(status=0)
+    else:
+        users = BUser.objects.filter(status=1)
+    
     context = {
         "users": users,
-        "no_user": users.count() == 0
+        "no_user": users.count() == 0,
+        "show_inactive": show_inactive
     }
     return render(request=request, template_name="drivers.html", context=context)
 
@@ -143,7 +150,7 @@ def ambulance_info(request):
         no_driver = True
         for d in AmbulanceCrew.objects.filter(ambulance_id = amb.ambulance_id, start_time__lte = datetime.now()):
             if d.end_time == None :
-                context["driver"] = BUser.objects.get(username = d.driver_id)
+                context["driver"] = BUser.objects.get(username = d.driver_id.username)
                 no_driver = False
         if no_driver:
             context["busers"] = BUser.objects.all()
@@ -231,12 +238,18 @@ def edit_equipment(request):
 
 
 def institutions(request):
-	context = {}
-	context["inst"] = Institution.objects.all()
-	context["no_inst"] = False
-	if context["inst"].count() == 0:
-		context["no_inst"] = True
-	return render (request=request, template_name="institutions.html", context = context)
+    context = {}
+    show_inactive = request.GET.get('show_inactive', 'false') == 'true'
+    
+    if show_inactive:
+        context["inst"] = Institution.objects.filter(status=2, in_institution__isnull=True)
+    else:
+        context["inst"] = Institution.objects.filter(status=1, in_institution__isnull=True)
+    
+    context["no_inst"] = context["inst"].count() == 0
+    context["show_inactive"] = show_inactive
+    return render(request=request, template_name="institutions.html", context=context)
+
 
 
 def customers(request):
@@ -249,20 +262,37 @@ def customers(request):
 
 
 def add_institution(request):
-	form = NewInstitution()
-	if request.method == "POST":
-		form = NewInstitution(request.POST)
-		if form.is_valid():
-			inst = form.save()
-			messages.success(request, "Institution added successfuly." )
-			return redirect("institutions")
-		messages.error(request, "Unsuccessful registration. Invalid information.")
-	return render (request=request, template_name="add_institution.html", context={"add_institution_form":form})
+    parent_id = request.GET.get('parent_id')
+    initial_data = {}
+    
+    if parent_id:
+        parent_institution = Institution.objects.get(inst_id=parent_id)
+        initial_data['in_institution'] = parent_institution
+        initial_data['institution_adress'] = parent_institution.institution_adress
+
+    if request.method == "POST":
+        form = NewInstitution(request.POST)
+        if form.is_valid():
+            institution = form.save(commit=False)
+            if parent_id:
+                institution.in_institution = parent_institution
+                if not institution.institution_adress:
+                    institution.institution_adress = parent_institution.institution_adress
+            institution.save()
+            messages.success(request, "Institution added successfully.")
+            return redirect("institutions")
+        messages.error(request, "Unsuccessful registration. Invalid information.")
+    else:
+        form = NewInstitution(initial=initial_data)
+    
+    return render(request=request, template_name="add_institution.html", context={"add_institution_form": form})
 
 
 def institution_info(request):
     inst_id = request.POST.get("inst_id") or request.GET.get("inst_id")
     inst = get_object_or_404(Institution, inst_id=inst_id)
+    child_institutions = Institution.objects.filter(in_institution=inst)
+    
     if request.method == 'POST' and request.POST.get("save_form") == "True":
         form = UpdateInstitutionForm(request.POST, instance=inst)
         if form.is_valid():
@@ -274,7 +304,12 @@ def institution_info(request):
     else:
         form = UpdateInstitutionForm(instance=inst)
     
-    return render(request, "institution_info.html", {"inst": inst, "update_inst_form": form, "save_form": True})
+    return render(request, "institution_info.html", {
+        "inst": inst,
+        "update_inst_form": form,
+        "save_form": True,
+        "child_institutions": child_institutions
+    })
 
 
 def get_travel_time(api_key, origin, destination, departure_time):
@@ -648,10 +683,9 @@ def customer_ride_page(request):
     return render(request, 'customer_ride.html', context)
 
 
-def get_institution_address(request):
-    institution_id = request.GET.get('institution_id')
+def get_institution_address(request, institution_id):
+    inst = get_object_or_404(Institution, inst_id=institution_id)
     try:
-        institution = Institution.objects.get(inst_id=institution_id)
-        return JsonResponse({'address': institution.institution_adress})
+        return JsonResponse({'address': inst.institution_adress})
     except Institution.DoesNotExist:
         return JsonResponse({'error': 'Institution not found'}, status=404)

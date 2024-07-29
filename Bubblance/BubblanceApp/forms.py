@@ -112,6 +112,9 @@ class CustomerRequestForm(ModelForm):
         self.fields['pickup_institution'].label = 'Choose a pick-up Institution'
         self.fields['pickup_institution'].queryset = Institution.objects.all()
 
+        self.fields['pickup_institution'].widget.attrs.update({'onchange': 'updateAddress(this, document.getElementById("id_pick_up_location"))'})
+        self.fields['dropoff_institution'].widget.attrs.update({'onchange': 'updateAddress(this, document.getElementById("id_drop_of_location"))'})
+
         self.fields['drop_at_institution'].required=False
         self.fields['drop_at_institution'].label = 'Drop-off at an Institution?'
         self.fields['drop_at_institution'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success right-aligned-toggle", attrs={'onchange': "toggleInstitutionDropoff()"})

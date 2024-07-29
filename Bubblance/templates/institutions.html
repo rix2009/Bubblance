@@ -6,38 +6,47 @@
 {% load crispy_forms_tags %}
 <!-- searchbar -->
 <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search institutions...">
-<br>
-<div class="container py-5" align="center">
+<div align="center" style="padding-bottom: 3%;">
   {% if no_inst %}
   <h3>Sadly there are no Institutions to show</h3>
   {% endif %}
-  <a class="btn btn-primary" href="{% url 'add_institution' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">Add an Institution</a>
+  <table style="width: 100%;">
+    <tr>
+      <td align="left">
+        <a class="btn btn-primary" href="{% url 'add_institution' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 95%;">Add an Institution</a>
+      </td>
+      <td align="right">
+        <a class="btn btn-secondary" href="?show_inactive={% if show_inactive %}false{% else %}true{% endif %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 95%;">
+          {% if show_inactive %}Show Active Institutions{% else %}Show Inactive Institutions{% endif %}
+        </a>        
+      </td>
+    </tr>
+  </table>
 </div>
 
-<!--Instituion--> 
+<!--Institution--> 
 <div id="institutionList">
   {% for inst in inst %}
-  <form method="POST" action="{% url 'institution_info' %}">
+  <form method="POST" action="{% url 'institution_info' %}" style="padding-bottom: 2%;">
       {% csrf_token %}
       <input type="hidden" name="inst_id" value="{{ inst.inst_id }}"> 
       <button class="btn btn-primary institution-item" type="submit" style="width: 80%;background-color: #d4e3fc; border:#353459 1px solid;border-radius: 12px;margin-left: 10%;"
       data-institution-info="{{ inst.institution_name }} {{ inst.institution_adress }}">
-          <table style="color: #353459; font-size: x-large; text-align: center;">
+          <table style="color: #353459; font-size:16px; text-align: center;">
               <tr>
                 <td>
-                  <img class="navbar-logo" src="{% static 'inst.png' %}" width="60px" height="50px">
+                  <img class="navbar-logo" src="{% static 'inst.png' %}" width="40px" height="30px">
                 </td>
                   <td style="width: 90%;">
                       <b>{{inst.institution_name}}</b>
                   </td>
                   <td style="width: 10%;">
-                      <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="50px" height="50px" style="margin-left: 10%;">
+                      <img class="navbar-logo" src="{% static 'arrow_right.png' %}" width="30px" height="30px" style="margin-left: 10%;">
                   </td>
               </tr>
           </table>
       </button>
   </form>
-  <br>
   {% endfor %}
 </div>
 <script>

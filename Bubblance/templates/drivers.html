@@ -11,8 +11,19 @@
     {% if no_user %}
     <h3>Sadly there are no Drivers to show</h3>
     {% endif %}
-    <a class="btn btn-primary" href="{% url 'register' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 60%;">add a User</a>
-  </div>
+    <table style="width: 100%;">
+        <tr>
+            <td align="left">
+                <a class="btn btn-primary" href="{% url 'register' %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 95%;">add a User</a>
+            </td>
+            <td align="right">
+                <a class="btn btn-secondary" href="?show_inactive={% if show_inactive %}false{% else %}true{% endif %}" style="color: #d4e3fc;width: 30%;background-color: #353459; border:#353459 1px solid;border-radius: 12px; width: 95%;">
+                    {% if show_inactive %}Show Active Drivers{% else %}Show Inactive Drivers{% endif %}
+                </a>        
+            </td>
+        </tr>
+    </table>
+</div>
 <!--drivers--> 
 <div id="driverList">
     {% for buser in users %}
