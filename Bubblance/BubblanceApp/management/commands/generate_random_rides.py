@@ -38,9 +38,17 @@ class Command(BaseCommand):
 
             # Randomly choose if pickup or drop-off is at an institution
             if random.choice([True, False]):
+                pick_from_institution = True
+                drop_at_institution = False
+                pickup_institution = institution
+                drop_of_institution = None
                 pick_up_location = institution.institution_adress
                 drop_of_location = random.choice(petah_tikva_addresses)
             else:
+                pick_from_institution = False
+                pickup_institution = None
+                drop_at_institution = True
+                drop_of_institution = institution
                 pick_up_location = random.choice(petah_tikva_addresses)
                 drop_of_location = institution.institution_adress
 
@@ -50,6 +58,10 @@ class Command(BaseCommand):
             # Create CustomerRequest
             customer_request = CustomerRequest.objects.create(
                 customer_id=customer,
+                pick_from_institution = pick_from_institution,
+                pickup_institution = pickup_institution,
+                drop_at_institution = drop_at_institution,
+                dropoff_institution = drop_of_institution,
                 pick_up_location=pick_up_location,
                 drop_of_location=drop_of_location,
                 pick_up_time=ride_time,
@@ -72,7 +84,7 @@ class Command(BaseCommand):
                 pick_up_time=ride_time,
                 drop_of_time=ride_time + timedelta(minutes=random.randint(30, 120)),
                 number_of_stuff_needed=1 + customer_request.two_stuff_needed,
-                status=random.choice([Status.active, Status.deactive]),
+                status=Status.active
             )
 
             # Add some space between rides
