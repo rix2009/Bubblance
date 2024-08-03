@@ -54,6 +54,8 @@ urlpatterns = [
     path('ride/<int:ride_id>/finish/', views.finish_ride, name='finish_ride'),
     path('customer-ride/', views.customer_ride_page, name='customer_ride_page'),
     path('get_institution_address/<int:institution_id>', views.get_institution_address, name='get_institution_address'),
+    path('start_shift/', views.start_shift, name='start_shift'),
+    path('finish_shift/', views.finish_shift, name='finish_shift'),
 
 ] + debug_toolbar_urls()
 

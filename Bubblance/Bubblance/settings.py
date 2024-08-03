@@ -117,7 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jerusalem'
 
 USE_I18N = True
 
@@ -144,7 +144,7 @@ BOOTSTRAP_DATEPICKER_PLUS = {
     }
 }
 
-GOOGLE_API_KEY = "AIzaSyAAhpswMroeL5u4QnE59wRzKRyZpwk6mHI"
+GOOGLE_API_KEY = ""
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

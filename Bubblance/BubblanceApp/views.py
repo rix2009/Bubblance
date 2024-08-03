@@ -387,77 +387,40 @@ def can_driver_accommodate_ride(driver, new_ride, api_key):
     start_location = driver.current_location or "Kakal St 7, Petah Tikva"
     
     if not rides:
-        travel_time = get_travel_time(
-            api_key,
-            start_location,
-            new_ride.pick_up_location,
-            timezone.now()
-        )
+        travel_time = get_travel_time(api_key, start_location, new_ride.pick_up_location, timezone.now())
         earliest_arrival = max(timezone.now() + timedelta(seconds=travel_time), new_ride.pick_up_time)
         return True, earliest_arrival
     
     for i, ride in enumerate(rides):
         if i == 0:
-            ride = rides[0]
-            travel_time = get_travel_time(
-                api_key,
-                start_location,
-                new_ride.pick_up_location,
-                timezone.now()
-            )
+            travel_time = get_travel_time(api_key, start_location, new_ride.pick_up_location, timezone.now())
             earliest_arrival = max(timezone.now() + timedelta(seconds=travel_time), new_ride.pick_up_time)
-            travel_time2 = get_travel_time(
-                api_key,
-                new_ride.pick_up_location,
-                new_ride.drop_of_location,
-                earliest_arrival
-            )
-            new_ride_drop_of = earliest_arrival + timedelta(seconds=travel_time2)
-            travel_time3 = get_travel_time(
-                api_key,
-                new_ride.drop_of_location,
-                ride["origin"],
-                new_ride_drop_of
-            )
-            next_ride_pick_up = max(new_ride_drop_of + timedelta(seconds=travel_time3), ride["start_time"])
-            epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
-            if can_fit_ride_between( epoch, next_ride_pick_up, earliest_arrival, new_ride_drop_of):
-                return True, earliest_arrival
         else:
             prev_ride = rides[i-1]
-            ride = rides[i]
-            travel_time = get_travel_time(
-                api_key,
-                prev_ride["destination"],
-                new_ride.pick_up_location,
-                prev_ride["finish_time"]
-            )
-            earliest_arrival = max(prev_ride["finish_time"] + timedelta(seconds=travel_time), new_ride.pick_up_time)
-            travel_time2 = get_travel_time(
-                api_key,
-                new_ride.pick_up_location,
-                new_ride.drop_of_location,
-                earliest_arrival
-            )
-            new_ride_drop_of = earliest_arrival + timedelta(seconds=travel_time2)
-            travel_time3 = get_travel_time(
-                api_key,
-                new_ride.drop_of_location,
-                ride["origin"],
-                new_ride_drop_of
-            )
-            next_ride_pick_up = max(new_ride_drop_of + timedelta(seconds=travel_time3), ride["start_time"])
-            if can_fit_ride_between(next_ride_pick_up, prev_ride["finish_time"], earliest_arrival, new_ride_drop_of):
+            travel_time = get_travel_time(api_key, prev_ride['destination'], new_ride.pick_up_location, prev_ride['finish_time'])
+            earliest_arrival = max(prev_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time)
+        
+        travel_time2 = get_travel_time(api_key, new_ride.pick_up_location, new_ride.drop_of_location, earliest_arrival)
+        new_ride_drop_of = earliest_arrival + timedelta(seconds=travel_time2)
+        
+        next_ride_pick_up = ride['start_time']
+        travel_time3 = get_travel_time(api_key, new_ride.drop_of_location, ride['origin'], new_ride_drop_of)
+        next_ride_arrival = new_ride_drop_of + timedelta(seconds=travel_time3)
+        
+        if next_ride_arrival <= next_ride_pick_up:
+            travel_time4 = get_travel_time(api_key, ride['origin'], ride['destination'], next_ride_pick_up)
+            next_ride_drop_of = next_ride_pick_up + timedelta(seconds=travel_time4)
+            
+            if can_fit_ride_between(earliest_arrival, new_ride_drop_of, next_ride_pick_up, next_ride_drop_of):
                 return True, earliest_arrival
     
     return False, None
 
 
 def get_best_drivers_for_request(customer_request, api_key):
+    preferred_driver = None
     if customer_request.have_preferred_driver:
         preferred_driver = get_object_or_404(BUser,pk = customer_request.preferred_driver)
-    else: 
-        None
     best_drivers = []
 
     active_drivers = get_active_drivers()
@@ -511,10 +474,11 @@ def pick_a_driver(request, request_id):
     
     # Store arrival times in session
     request.session['driver_arrival_times'] = {str(driver.id): arrival_time.isoformat() for driver, arrival_time in best_drivers}
-    
+    time_now = timezone.now()
     context = {
         'customer_request': customer_request,
         'best_drivers': best_drivers,
+        'time_now': time_now,
     }
     return render(request, 'pick_a_driver.html', context)
 
@@ -574,7 +538,7 @@ def rides(request):
     else:  # completed
         rides = CustomerRide.objects.filter(status=2, pick_up_time__date=filter_date).order_by('pick_up_time')
     
-    columns = ['#','Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
+    columns = ['Driver', 'Patient Name', 'Request Pick Up Time', 'Ride Pick Up Time']
     if ride_type == 'current':
         columns.append('Actions')
     elif ride_type == 'scheduled':
@@ -657,6 +621,9 @@ def driver_home(request):
     driver = request.user.buser
     page_type = request.GET.get('type', 'todo')
     selected_date = request.GET.get('date')
+    active_crew = AmbulanceCrew.objects.filter(driver_id=driver, end_time__isnull=True).first()
+    active_ambulance_ids = AmbulanceCrew.objects.filter(end_time__isnull=True).values_list('ambulance_id', flat=True)
+    available_ambulances = Ambulance.objects.filter(status=1).exclude(ambulance_id__in=active_ambulance_ids)
 
     if selected_date:
         selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
@@ -671,6 +638,8 @@ def driver_home(request):
         finished_rides = CustomerRide.objects.filter(driver_id=driver, status=2, pick_up_time__date=selected_date)
 
     context = {
+        'active_crew': active_crew,
+        'available_ambulances': available_ambulances,
         'ongoing_ride': ongoing_ride,
         'rides': active_rides if page_type == 'todo' else finished_rides,
         'page_type': page_type,
@@ -731,3 +700,24 @@ def get_institution_address(request, institution_id):
         return JsonResponse({'address': inst.institution_adress})
     except Institution.DoesNotExist:
         return JsonResponse({'error': 'Institution not found'}, status=404)
+    
+    
+def start_shift(request):
+    if request.method == 'POST':
+        ambulance_id = request.POST.get('ambulance_id')
+        driver = request.user.buser
+        AmbulanceCrew.objects.create(
+            ambulance_id_id=ambulance_id,
+            driver_id=driver,
+            start_time=timezone.now()
+        )
+        return redirect('driver_home')
+
+
+def finish_shift(request):
+    driver = request.user.buser
+    active_crew = AmbulanceCrew.objects.filter(driver_id=driver, end_time__isnull=True).first()
+    if active_crew:
+        active_crew.end_time = timezone.now()
+        active_crew.save()
+    return redirect('driver_home')
