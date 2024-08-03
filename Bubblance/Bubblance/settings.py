@@ -144,7 +144,7 @@ BOOTSTRAP_DATEPICKER_PLUS = {
     }
 }
 
-GOOGLE_API_KEY = ""
+GOOGLE_API_KEY = "AIzaSyAAhpswMroeL5u4QnE59wRzKRyZpwk6mHI"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

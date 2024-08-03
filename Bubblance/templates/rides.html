@@ -65,11 +65,13 @@
                 {% for ride in rides %}
                     <tr>
                         {% if ride_type == 'current' or ride_type == 'completed' %}
+                            <td>{{ride}}</td>
                             <td>{{ ride.driver_id.firstname }} {{ ride.driver_id.lastname }}</td>
                             <td>{{ ride.customer_id.patient_name }}</td>
                             <td>{{ ride.customer_req.pick_up_time }}</td>
                             <td>{{ ride.pick_up_time }}</td>
                         {% elif ride_type == 'scheduled' %}
+                            <td>{{ride}}</td>
                             <td>{{ ride.driver_id.firstname }} {{ ride.driver_id.lastname }}</td>
                             <td>{{ ride.customer_id.patient_name }}</td>
                             <td>{{ ride.pick_up_time }}</td>
