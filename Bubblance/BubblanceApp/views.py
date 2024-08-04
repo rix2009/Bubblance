@@ -8,6 +8,7 @@ import time
 import win32com.client
 import pythoncom
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.db.models import Q
 from reportlab.lib import colors, pagesizes
 from reportlab.lib.pagesizes import letter
@@ -251,7 +252,6 @@ def institutions(request):
     return render(request=request, template_name="institutions.html", context=context)
 
 
-
 def customers(request):
 	context = {}
 	context["customers"] = Customer.objects.all()
@@ -414,7 +414,10 @@ def can_driver_accommodate_ride(driver, new_ride, api_key):
             if can_fit_ride_between(earliest_arrival, new_ride_drop_of, next_ride_pick_up, next_ride_drop_of):
                 return True, earliest_arrival
     
-    return False, None
+    last_ride = rides[-1]
+    travel_time = get_travel_time(api_key, last_ride['destination'], new_ride.pick_up_location, last_ride['finish_time'])
+    earliest_arrival = max(last_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time)
+    return True, earliest_arrival
 
 
 def get_best_drivers_for_request(customer_request, api_key):
@@ -424,11 +427,19 @@ def get_best_drivers_for_request(customer_request, api_key):
     best_drivers = []
 
     active_drivers = get_active_drivers()
-
-    for driver in active_drivers:
+    
+    def process_driver(driver):
         can_accommodate, arrival_time = can_driver_accommodate_ride(driver, customer_request, api_key)
         if can_accommodate:
-            best_drivers.append((driver, arrival_time))
+            return driver, arrival_time
+        return None
+    
+    with ThreadPoolExecutor() as executor:
+        future_to_driver = {executor.submit(process_driver, driver): driver for driver in active_drivers}
+        for future in as_completed(future_to_driver):
+            result = future.result()
+            if result:
+                best_drivers.append(result)
 
     best_drivers.sort(key=lambda x: x[1])
         
@@ -438,11 +449,11 @@ def get_best_drivers_for_request(customer_request, api_key):
             best_drivers = [preferred_driver_entry] + [
                 (d, t) for d, t in best_drivers if d != preferred_driver
             ]
-            return best_drivers[:3]  # Return top 3 drivers including the preferred driver
+            return best_drivers[:3] 
         else:
-            return best_drivers[:2]  # Return top 2 drivers if preferred driver can't accommodate
+            return best_drivers[:2] 
     else:
-        return best_drivers[:2]  # Return top 2 drivers if no preferred driver
+        return best_drivers[:2] 
 
 
 def plan_a_ride(request):
