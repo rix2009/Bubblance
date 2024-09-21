@@ -390,20 +390,20 @@ def can_driver_accommodate_ride(driver, new_ride, api_key):
     earliest_arrival = max(timezone.now() + timedelta(seconds=travel_time_to_pickup), new_ride.pick_up_time)
     
     possible_times = [earliest_arrival]
-    
+    handeling_time = timedelta(minutes=15)
     for i, ride in enumerate(rides):
         if i == 0:
             possible_times.append(earliest_arrival)
         else:
             prev_ride = rides[i-1]
-            travel_time = get_travel_time(api_key, prev_ride['destination'], new_ride.pick_up_location, prev_ride['finish_time'])
+            travel_time = get_travel_time(api_key, prev_ride['destination'], new_ride.pick_up_location, prev_ride['finish_time'] + handeling_time)
             possible_times.append(max(prev_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time))
         
         travel_time2 = get_travel_time(api_key, new_ride.pick_up_location, new_ride.drop_of_location, possible_times[-1])
         new_ride_drop_of = possible_times[-1] + timedelta(seconds=travel_time2)
         
         next_ride_pick_up = ride['start_time']
-        travel_time3 = get_travel_time(api_key, new_ride.drop_of_location, ride['origin'], new_ride_drop_of)
+        travel_time3 = get_travel_time(api_key, new_ride.drop_of_location, ride['origin'], new_ride_drop_of + handeling_time)
         next_ride_arrival = new_ride_drop_of + timedelta(seconds=travel_time3)
         
         if next_ride_arrival > next_ride_pick_up:
@@ -411,7 +411,7 @@ def can_driver_accommodate_ride(driver, new_ride, api_key):
     
     if rides:
         last_ride = rides[-1]
-        travel_time = get_travel_time(api_key, last_ride['destination'], new_ride.pick_up_location, last_ride['finish_time'])
+        travel_time = get_travel_time(api_key, last_ride['destination'], new_ride.pick_up_location, last_ride['finish_time'] + handeling_time)
         possible_times.append(max(last_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time))
     
     valid_times = [time for time in possible_times if time is not None]
