@@ -59,7 +59,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function initializeVisibility() {
     toggleVisibility('customer_type', 'institution_id');
-    // toggleVisibility('pick_from_institution', 'pickup_institution');
     toggleVisibility('drop_at_institution', 'dropoff_institution');
     toggleVisibility('return_trip', 'return_trip_pick_up_time');
     toggleVisibility('have_preferred_driver', 'preferred_driver');
@@ -68,6 +67,7 @@ function initializeVisibility() {
 function toggleVisibility(toggleField, targetField) {
     var toggle = document.getElementById('id_' + toggleField);
     var target = document.getElementById('div_id_' + targetField).closest('.form-group');
+    // console.log('Toggling visibility:', toggleField, targetField, toggle.checked);
     if (toggle.checked) {
         target.style.display = 'block';
     } else {
@@ -76,6 +76,12 @@ function toggleVisibility(toggleField, targetField) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+    var customerTypeToggle = document.getElementById('id_customer_type');
+    if (customerTypeToggle) {
+        customerTypeToggle.addEventListener('change', function() {
+            toggleVisibility('customer_type', 'institution_id');
+        });
+    }
     var pickupInstitutionToggle = document.getElementById('id_pick_from_institution');
     var dropoffInstitutionToggle = document.getElementById('id_drop_at_institution');
 

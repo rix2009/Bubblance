@@ -386,44 +386,47 @@ def can_driver_accommodate_ride(driver, new_ride, api_key):
     rides = get_active_rides_by_driver().get(driver, [])
     start_location = driver.current_location or "Kakal St 7, Petah Tikva"
     
-    if not rides:
-        travel_time = get_travel_time(api_key, start_location, new_ride.pick_up_location, timezone.now())
-        earliest_arrival = max(timezone.now() + timedelta(seconds=travel_time), new_ride.pick_up_time)
-        return True, earliest_arrival
+    travel_time_to_pickup = get_travel_time(api_key, start_location, new_ride.pick_up_location, timezone.now())
+    earliest_arrival = max(timezone.now() + timedelta(seconds=travel_time_to_pickup), new_ride.pick_up_time)
+    
+    possible_times = [earliest_arrival]
     
     for i, ride in enumerate(rides):
         if i == 0:
-            travel_time = get_travel_time(api_key, start_location, new_ride.pick_up_location, timezone.now())
-            earliest_arrival = max(timezone.now() + timedelta(seconds=travel_time), new_ride.pick_up_time)
+            possible_times.append(earliest_arrival)
         else:
             prev_ride = rides[i-1]
             travel_time = get_travel_time(api_key, prev_ride['destination'], new_ride.pick_up_location, prev_ride['finish_time'])
-            earliest_arrival = max(prev_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time)
+            possible_times.append(max(prev_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time))
         
-        travel_time2 = get_travel_time(api_key, new_ride.pick_up_location, new_ride.drop_of_location, earliest_arrival)
-        new_ride_drop_of = earliest_arrival + timedelta(seconds=travel_time2)
+        travel_time2 = get_travel_time(api_key, new_ride.pick_up_location, new_ride.drop_of_location, possible_times[-1])
+        new_ride_drop_of = possible_times[-1] + timedelta(seconds=travel_time2)
         
         next_ride_pick_up = ride['start_time']
         travel_time3 = get_travel_time(api_key, new_ride.drop_of_location, ride['origin'], new_ride_drop_of)
         next_ride_arrival = new_ride_drop_of + timedelta(seconds=travel_time3)
         
-        if next_ride_arrival <= next_ride_pick_up:
-            travel_time4 = get_travel_time(api_key, ride['origin'], ride['destination'], next_ride_pick_up)
-            next_ride_drop_of = next_ride_pick_up + timedelta(seconds=travel_time4)
-            
-            if can_fit_ride_between(earliest_arrival, new_ride_drop_of, next_ride_pick_up, next_ride_drop_of):
-                return True, earliest_arrival
+        if next_ride_arrival > next_ride_pick_up:
+            possible_times[-1] = None
     
-    last_ride = rides[-1]
-    travel_time = get_travel_time(api_key, last_ride['destination'], new_ride.pick_up_location, last_ride['finish_time'])
-    earliest_arrival = max(last_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time)
-    return True, earliest_arrival
+    if rides:
+        last_ride = rides[-1]
+        travel_time = get_travel_time(api_key, last_ride['destination'], new_ride.pick_up_location, last_ride['finish_time'])
+        possible_times.append(max(last_ride['finish_time'] + timedelta(seconds=travel_time), new_ride.pick_up_time))
+    
+    valid_times = [time for time in possible_times if time is not None]
+    
+    if valid_times:
+        return True, min(valid_times)
+    else:
+        return False, None
+
 
 
 def get_best_drivers_for_request(customer_request, api_key):
     preferred_driver = None
     if customer_request.have_preferred_driver:
-        preferred_driver = get_object_or_404(BUser,pk = customer_request.preferred_driver)
+        preferred_driver = get_object_or_404(BUser, pk=customer_request.preferred_driver)
     best_drivers = []
 
     active_drivers = get_active_drivers()
@@ -435,25 +438,23 @@ def get_best_drivers_for_request(customer_request, api_key):
         return None
     
     with ThreadPoolExecutor() as executor:
-        future_to_driver = {executor.submit(process_driver, driver): driver for driver in active_drivers}
-        for future in as_completed(future_to_driver):
+        futures = [executor.submit(process_driver, driver) for driver in active_drivers]
+        for future in as_completed(futures):
             result = future.result()
             if result:
-                best_drivers.append(result)
+                if preferred_driver and result[0] == preferred_driver:
+                    best_drivers.insert(0, result)
+                else:
+                    best_drivers.append(result)
+                if (preferred_driver and len(best_drivers) == 3) or (not preferred_driver and len(best_drivers) == 2):
+                    break
 
     best_drivers.sort(key=lambda x: x[1])
-        
+    
     if preferred_driver:
-        preferred_driver_entry = next(((d, t) for d, t in best_drivers if d == preferred_driver), None)
-        if preferred_driver_entry:
-            best_drivers = [preferred_driver_entry] + [
-                (d, t) for d, t in best_drivers if d != preferred_driver
-            ]
-            return best_drivers[:3] 
-        else:
-            return best_drivers[:2] 
+        return best_drivers[:3] if len(best_drivers) >= 3 else best_drivers
     else:
-        return best_drivers[:2] 
+        return best_drivers[:2]
 
 
 def plan_a_ride(request):

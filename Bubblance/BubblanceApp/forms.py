@@ -151,32 +151,32 @@ class CustomerRequestForm(ModelForm):
 
 
 class NewCustomerForm(ModelForm):
+    customer_type = forms.BooleanField(
+        required=False,
+        label='Business Customer?',
+        widget=DjangoToggleSwitchWidget(
+            round=True, 
+            klass="django-toggle-switch-success right-aligned-toggle", 
+            attrs={'onchange': "toggleVisibility('customer_type', 'institution_id')"}
+        )
+    )
+
     class Meta:
         model = Customer
         fields = ("customer_type", "institution_id", "patient_name", "contact_name", "contact_phone")
     
     def __init__(self, *args, **kwargs):
         super(NewCustomerForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.fields['customer_type'].label = 'Buisness customer?'
-        self.fields['customer_type'].required = False
-        # self.fields['customer_type'].widget = DjangoToggleSwitchWidget(round=True, klass="django-toggle-switch-success", attrs={'onchange': "toggleVisibility('customer_type', 'institution_id')"})
-        self.fields["customer_type"].widget.attrs.update({'onchange': "toggleVisibility('have_preferred_driver', 'preferred_driver')"})
         self.fields['institution_id'].required = False
+        # self.fields['institution_id'].widget = forms.Select(attrs={'class': 'form-control'})
 
     def clean_customer_type(self):
         customer_type = self.cleaned_data['customer_type']
-        if customer_type in [0, '0']:
-            return False
-        elif customer_type in [1, '1']:
-            return True
-        return customer_type
+        return 1 if customer_type else 0
 
     def save(self, commit=True):
         instance = super(NewCustomerForm, self).save(commit=False)
-        # Ensure customer_type is stored as 0/1
-        instance.customer_type = 1 if instance.customer_type else 0
-
+        instance.customer_type = self.cleaned_data['customer_type']
         if commit:
             instance.save()
         return instance
